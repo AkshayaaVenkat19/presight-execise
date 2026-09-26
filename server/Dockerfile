@@ -1,0 +1,8 @@
+# ── Server ───────────────────────────────────────────────────────────────────
+FROM node:24-alpine AS server
+WORKDIR /app/server
+COPY server/package*.json ./
+RUN npm install --omit=dev
+COPY server/ .
+EXPOSE 3001
+CMD ["node", "src/index.js"]

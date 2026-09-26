@@ -1,13 +1,24 @@
 {
   "name": "presight-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "seed": "node src/db/seed.js"
+  },
   "dependencies": {
+    "better-sqlite3": "~11.10.0",
+    "cors": "~2.8.5",
+    "dotenv": "~16.5.0",
     "express": "~5.1.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "~7.6.13",
+    "@types/cors": "~2.8.17",
     "@types/express": "~5.0.1",
-    "@types/node-fetch": "~2.6.12"
+    "@types/node": "~22.14.0",
+    "nodemon": "~3.1.10"
   }
 }

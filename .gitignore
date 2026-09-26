@@ -29,3 +29,11 @@ yarn-error.log*
 
 .parcel-cache
 .idea/
+
+# SQLite database
+data/
+*.db
+*.db-shm
+*.db-wal
+
+docs/

@@ -1,0 +1,28 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      CLIENT_ORIGIN: http://localhost:80
+      DB_PATH: /app/data/users.db
+    volumes:
+      # Persist the SQLite database file between container restarts
+      - db-data:/app/data
+    restart: unless-stopped
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  db-data:
