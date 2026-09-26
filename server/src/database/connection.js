@@ -1,12 +1,32 @@
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 const path = require('path');
+const fs = require('fs');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../../data/users.db');
+const DB_DIR = path.join(__dirname, '../../data');
+if (!fs.existsSync(DB_DIR)) {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+}
 
-// Single shared connection — better-sqlite3 is synchronous and connection-safe
-const db = new Database(DB_PATH);
+const DB_PATH = process.env.DB_PATH || path.join(DB_DIR, 'users.db');
 
-// Enable WAL mode for better concurrent read performance
-db.pragma('journal_mode = WAL');
+let dbPromise = null;
 
-module.exports = db;
+/**
+ * Returns an asynchronous connection instance to SQLite.
+ */
+function getDbConnection() {
+  if (!dbPromise) {
+    dbPromise = open({
+      filename: DB_PATH,
+      driver: sqlite3.Database,
+    }).then(async (db) => {
+      await db.exec('PRAGMA foreign_keys = ON;');
+      await db.exec('PRAGMA journal_mode = WAL;');
+      return db;
+    });
+  }
+  return dbPromise;
+}
+
+module.exports = { getDbConnection };
