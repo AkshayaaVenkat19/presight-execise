@@ -1,10 +1,21 @@
-import type { JSX } from 'react';
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { AppLayout } from "./components/layout/AppLayout";
+import { DirectoryPage } from "./pages/DirectoryPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
-export default function App(): JSX.Element {
+function DirectoryRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: "/directory", search }} replace />;
+}
+
+export default function App() {
   return (
-    <div>
-      <h1>Presight User Directory</h1>
-      <p>Server: <a href="http://localhost:3001/health">/health</a></p>
-    </div>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<DirectoryRedirect />} />
+        <Route path="directory" element={<DirectoryPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
 }

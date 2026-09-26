@@ -1,0 +1,81 @@
+import type { FacetValue } from "../../types/directory";
+import { Skeleton } from "../feedback/Skeleton";
+
+interface Props {
+  title: string;
+  values: FacetValue[];
+  selected: string[];
+  onToggle: (value: string) => void;
+  loading: boolean;
+  maxSelected: number;
+}
+
+export function FilterGroup({
+  title,
+  values,
+  selected,
+  onToggle,
+  loading,
+  maxSelected,
+}: Props) {
+  const options = [
+    ...values,
+    ...selected
+      .filter((value) => !values.some((option) => option.value === value))
+      .map((value) => ({ value, count: 0 })),
+  ];
+  return (
+    <fieldset className="m-0 min-w-0 border-0 p-0 [&+fieldset]:mt-6 [&+fieldset]:border-t [&+fieldset]:border-border [&+fieldset]:pt-6">
+      <legend className="mb-3.5 flex w-full items-center justify-between p-0 text-xs font-semibold">
+        {title}
+        <span className="text-[10px] font-normal text-muted">Top 20</span>
+      </legend>
+      {loading ? (
+        <div
+          className="grid gap-[19px] py-1.5"
+          role="status"
+          aria-label={`Loading ${title.toLowerCase()}`}
+        >
+          {Array.from({ length: 5 }, (_, index) => (
+            <Skeleton key={index} />
+          ))}
+        </div>
+      ) : options.length === 0 ? (
+        <p className="text-xs leading-relaxed text-muted">
+          No matching {title.toLowerCase()}.
+        </p>
+      ) : (
+        <div className="scrollbar-thin -m-[3px] max-h-[220px] overflow-y-auto p-[3px] tablet:max-h-[286px]">
+          {options.map(({ value, count }) => (
+            <label
+              className="flex cursor-pointer items-center gap-[9px] py-[7px] text-xs"
+              key={value}
+            >
+              <input
+                className="m-0 size-[15px] shrink-0 cursor-pointer accent-accent"
+                type="checkbox"
+                aria-label={`${value}, ${count} matching people`}
+                checked={selected.includes(value)}
+                disabled={
+                  !selected.includes(value) && selected.length >= maxSelected
+                }
+                onChange={() => onToggle(value)}
+              />
+              <span className="min-w-0 flex-1 truncate" title={value}>
+                {value}
+              </span>
+              <span className="min-w-[26px] rounded-[5px] bg-surface-soft px-[5px] py-[3px] text-center text-[10px] text-muted tabular-nums">
+                {count.toLocaleString()}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+      {selected.length >= maxSelected && (
+        <p className="text-xs leading-relaxed text-muted">
+          Up to {maxSelected} selections allowed.
+        </p>
+      )}
+    </fieldset>
+  );
+}

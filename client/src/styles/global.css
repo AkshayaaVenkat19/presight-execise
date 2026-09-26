@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* Theme tokens are shared; layout and component styling use Tailwind utilities. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --shadow-panel: var(--shadow);
+}
+
+@theme {
+  --breakpoint-compact: 26.5rem;
+  --breakpoint-tablet: 47.5rem;
+  --breakpoint-desktop: 69rem;
+}
+
+@layer base {
+  :root {
+    font-family:
+      "Inter",
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    color: var(--text);
+    background: var(--background);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    --background: #f5f7fa;
+    --surface: #ffffff;
+    --surface-soft: #f1f5f7;
+    --text: #172b3a;
+    --muted: #627383;
+    --border: #dfe6ec;
+    --accent: #087d78;
+    --accent-hover: #066561;
+    --accent-soft: #e6f4f1;
+    --danger: #b54141;
+    --danger-soft: #fff1f1;
+    --shadow: 0 3px 14px rgb(23 43 58 / 3%);
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    --background: #0e1720;
+    --surface: #16222e;
+    --surface-soft: #1c2c39;
+    --text: #e6eef5;
+    --muted: #a2b4c3;
+    --border: #2a3b49;
+    --accent: #6bd7c7;
+    --accent-hover: #99e4d8;
+    --accent-soft: #173c3a;
+    --danger: #ffacac;
+    --danger-soft: #3d252c;
+    --shadow: 0 3px 14px rgb(0 0 0 / 8%);
+    color-scheme: dark;
+  }
+
+  body {
+    min-width: 320px;
+  }
+  button,
+  a,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  svg {
+    flex-shrink: 0;
+  }
+  button,
+  a,
+  input,
+  select,
+  [tabindex] {
+    outline-offset: 4px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--muted) 12%, transparent),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
