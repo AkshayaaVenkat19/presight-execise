@@ -7,6 +7,7 @@ const { getDbConnection } = require('../src/database/connection');
 const { runMigrations } = require('../src/database/migrations');
 const UserService = require('../src/services/user.service');
 const HealthRepository = require('../src/repositories/health.repository');
+const UserRepository = require('../src/repositories/user.repository');
 
 let server;
 let baseUrl;
@@ -67,6 +68,63 @@ test('text, nationality OR, and hobby AND filters also constrain sidebar counts'
     hobbies: [{ value: 'Hiking', count: 1 }, { value: 'Reading', count: 1 }],
     nationalities: [{ value: 'Canada', count: 1 }],
   });
+});
+
+test('page limits are enforced and responses contain only directory fields', async () => {
+  for (const limit of ['101', '0', '-1', '1.5', '1e3']) {
+    assert.equal((await request(`/api/users?limit=${limit}`)).status, 400);
+  }
+  const result = await request('/api/users?limit=100');
+  assert.equal(result.status, 200);
+  assert.equal(result.body.pagination.limit, 100);
+  assert.deepEqual(Object.keys(result.body.data[0]).sort(),
+    ['age', 'avatar', 'first_name', 'hobbies', 'id', 'last_name', 'nationality']);
+  assert.deepEqual(result.body.data[0].hobbies, ['Hiking', 'Reading']);
+  assert.deepEqual(result.body.data[2].hobbies, []);
+  assert.equal((await request('/api/users')).body.pagination.limit, 20);
+  const pastEnd = await request('/api/users?page=9007199254740991&limit=100');
+  assert.equal(pastEnd.status, 200);
+  assert.deepEqual(pastEnd.body.data, []);
+});
+
+test('search treats SQL and LIKE metacharacters literally and rejects unsafe sorting', async () => {
+  for (const text of ["' OR 1=1 --", '%', '_', '\\']) {
+    const result = await request(`/api/users?q=${encodeURIComponent(text)}`);
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.body.data, []);
+  }
+  assert.equal((await request('/api/users?sortBy=first_name%3BDROP%20TABLE%20users')).status, 400);
+});
+
+test('directory query count stays constant as the requested page grows', async (t) => {
+  const get = t.mock.method(db, 'get');
+  const all = t.mock.method(db, 'all');
+  for (const limit of [1, 100]) {
+    get.mock.resetCalls();
+    all.mock.resetCalls();
+    const result = await UserRepository.findUsers({
+      page: 1, limit, sortBy: 'first_name', sortOrder: 'asc',
+    });
+    assert.equal(result.users.length, Math.min(limit, 3));
+    assert.equal(get.mock.callCount(), 1);
+    assert.equal(all.mock.callCount(), 1);
+    assert.match(all.mock.calls[0].arguments[0], /LIMIT \? OFFSET \?/);
+    assert.deepEqual(all.mock.calls[0].arguments[1], [limit, 0]);
+  }
+});
+
+test('ascending text sorts and hobby lookups use matching indexes', async () => {
+  for (const field of ['first_name', 'last_name', 'nationality']) {
+    const plan = await db.all(`EXPLAIN QUERY PLAN
+      SELECT id, avatar, first_name, last_name, age, nationality FROM users
+      ORDER BY ${field} COLLATE NOCASE ASC, id ASC LIMIT 20`);
+    const details = plan.map((row) => row.detail).join('\n');
+    assert.match(details, new RegExp(`USING INDEX idx_users_${field}_nocase`));
+    assert.doesNotMatch(details, /TEMP B-TREE/);
+  }
+  const plan = await db.all('EXPLAIN QUERY PLAN SELECT user_id FROM user_hobbies WHERE hobby_id = ?', 1);
+  assert.match(plan.map((row) => row.detail).join('\n'),
+    /USING COVERING INDEX idx_user_hobbies_hobby_user/);
 });
 
 test('invalid input, unknown routes and unsupported methods use centralized errors', async () => {

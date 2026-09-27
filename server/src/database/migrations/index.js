@@ -45,12 +45,20 @@ async function runMigrations() {
       FOREIGN KEY (hobby_id) REFERENCES hobbies(id) ON DELETE CASCADE
     );
 
-    CREATE INDEX IF NOT EXISTS idx_users_first_name ON users(first_name);
-    CREATE INDEX IF NOT EXISTS idx_users_last_name ON users(last_name);
+    -- Match the list's collation and deterministic ascending tie-breaker.
+    CREATE INDEX IF NOT EXISTS idx_users_first_name_nocase ON users(first_name COLLATE NOCASE, id);
+    CREATE INDEX IF NOT EXISTS idx_users_last_name_nocase ON users(last_name COLLATE NOCASE, id);
+    CREATE INDEX IF NOT EXISTS idx_users_nationality_nocase ON users(nationality COLLATE NOCASE, id);
+    -- Equality filters and nationality grouping use the default collation.
     CREATE INDEX IF NOT EXISTS idx_users_nationality ON users(nationality);
     CREATE INDEX IF NOT EXISTS idx_users_age ON users(age);
-    CREATE INDEX IF NOT EXISTS idx_hobbies_name ON hobbies(name);
-    CREATE INDEX IF NOT EXISTS idx_user_hobbies_hobby_id ON user_hobbies(hobby_id);
+    CREATE INDEX IF NOT EXISTS idx_user_hobbies_hobby_user ON user_hobbies(hobby_id, user_id);
+
+    -- Upgrade existing databases too; hobbies.name already has a UNIQUE index.
+    DROP INDEX IF EXISTS idx_users_first_name;
+    DROP INDEX IF EXISTS idx_users_last_name;
+    DROP INDEX IF EXISTS idx_hobbies_name;
+    DROP INDEX IF EXISTS idx_user_hobbies_hobby_id;
 
     -- Covers the name search: a contains-match cannot seek, but SQLite can scan
     -- this index instead of the wider users table.
