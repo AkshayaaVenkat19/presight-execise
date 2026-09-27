@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.env
+**/.env.*
+**/data
+**/*.db
+**/*.db-*
+**/*.sqlite*
+**/*.log
+.git
+.agents
+.codex
+.DS_Store
