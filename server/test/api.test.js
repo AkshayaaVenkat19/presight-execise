@@ -1,7 +1,7 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 
-process.env.DB_PATH = ':memory:';
+process.env.DATABASE_PATH = ':memory:';
 const app = require('../src/app');
 const { getDbConnection } = require('../src/database/connection');
 const { runMigrations } = require('../src/database/migrations');

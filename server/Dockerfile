@@ -11,7 +11,7 @@ FROM node:24-bookworm-slim AS server
 WORKDIR /app/server
 ENV NODE_ENV=production \
     PORT=3001 \
-    DB_PATH=/app/data/users.db
+    DATABASE_PATH=/app/data/users.db
 COPY --from=dependencies /app/node_modules /app/node_modules
 COPY server/package.json ./
 COPY server/src ./src
