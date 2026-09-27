@@ -78,7 +78,7 @@ export function FilterSidebar({
             </Button>
           </div>
         ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)] gap-3 tablet:grid-cols-1 tablet:grid-rows-[repeat(2,minmax(0,1fr))] tablet:gap-6">
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)] gap-3 tablet:content-start tablet:grid-cols-1 tablet:grid-rows-[repeat(2,minmax(0,max-content))] tablet:gap-6">
             <FilterGroup
               title="Nationalities"
               values={facets?.nationalities ?? []}

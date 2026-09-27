@@ -57,17 +57,19 @@ export function AppLayout() {
             </span>
             <span className="text-accent">Presight</span>
           </Link>
-          <nav className="h-full" aria-label="Main navigation">
-            <NavLink
-              className={({ isActive }) =>
-                `flex h-full items-center gap-[9px] border-b-[5px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-brand-blue text-accent" : "border-transparent"}`
-              }
-              to="/directory"
-            >
-              <Icon className="hidden compact:block" name="people" />
-              Directory
-            </NavLink>
-          </nav>
+          {!isLoginPage && (
+            <nav className="h-full" aria-label="Main navigation">
+              <NavLink
+                className={({ isActive }) =>
+                  `flex h-full items-center gap-[9px] border-b-[5px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-brand-blue text-accent" : "border-transparent"}`
+                }
+                to="/directory"
+              >
+                <Icon className="hidden compact:block" name="people" />
+                Directory
+              </NavLink>
+            </nav>
+          )}
           <Popover
             label="Settings"
             trigger={<Icon name="settings" />}

@@ -30,7 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast && (
         <div
           role={toast.type === "error" ? "alert" : "status"}
-          className={`fixed top-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-4 rounded-xl border border-border p-4 shadow-panel ${toast.type === "error" ? "bg-danger-soft text-danger" : "bg-support-soft text-support"}`}
+          className={`fixed top-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-4 rounded-xl border border-border p-3 shadow-panel ${toast.type === "error" ? "bg-danger-soft text-danger" : "bg-support-soft text-support"}`}
         >
           <p>{toast.message}</p>
           <button

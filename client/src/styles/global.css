@@ -51,7 +51,7 @@
     --brand-green: #007646;
     --background: #f4f8fc;
     --surface: #ffffff;
-    --surface-soft: #edf4fa;
+    --surface-soft: #d2e2f1;
     --text: #132b43;
     --muted: #536b80;
     --border: #d6e3ee;
@@ -70,7 +70,7 @@
   :root[data-theme="dark"] {
     --background: #0b1624;
     --surface: #122338;
-    --surface-soft: #192e46;
+    --surface-soft: #203b56;
     --text: #e8f2fb;
     --muted: #a5bbcf;
     --border: #30475f;

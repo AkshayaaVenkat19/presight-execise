@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export function calculateWindow(
   count: number,
@@ -32,7 +32,7 @@ export function useVirtualWindow(
     scrollTop: 0,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
     const measure = () =>

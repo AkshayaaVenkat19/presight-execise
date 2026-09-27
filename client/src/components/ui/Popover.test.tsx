@@ -3,10 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { Popover } from "./Popover";
 
-function renderPopover() {
+function renderPopover(portal = false) {
   render(
     <>
-      <Popover label="Settings" trigger="Open settings">
+      <Popover label="Settings" trigger="Open settings" portal={portal}>
         <button type="button">Change theme</button>
         <button type="button">Sign out</button>
       </Popover>
@@ -16,10 +16,10 @@ function renderPopover() {
   return screen.getByRole("button", { name: "Settings" });
 }
 
-describe("Popover", () => {
+describe.each([false, true])("Popover (portal=%s)", (portal) => {
   it("opens with the keyboard, focuses content and restores focus on Escape", async () => {
     const user = userEvent.setup();
-    const trigger = renderPopover();
+    const trigger = renderPopover(portal);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await user.tab();
     await user.keyboard("{Enter}");
@@ -36,7 +36,7 @@ describe("Popover", () => {
 
   it("toggles on trigger clicks and dismisses on outside clicks", async () => {
     const user = userEvent.setup();
-    const trigger = renderPopover();
+    const trigger = renderPopover(portal);
     await user.click(trigger);
     await user.click(screen.getByRole("button", { name: "Change theme" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -49,12 +49,14 @@ describe("Popover", () => {
 
   it("allows tabbing through content and dismisses when focus leaves", async () => {
     const user = userEvent.setup();
-    renderPopover();
+    renderPopover(portal);
     await user.click(screen.getByRole("button", { name: "Settings" }));
     await user.tab();
     expect(screen.getByRole("button", { name: "Sign out" })).toHaveFocus();
     await user.tab();
-    expect(screen.getByRole("button", { name: "Outside" })).toHaveFocus();
+    expect(
+      portal ? document.body : screen.getByRole("button", { name: "Outside" }),
+    ).toHaveFocus();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

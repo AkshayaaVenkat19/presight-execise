@@ -17,7 +17,11 @@ export function DirectoryPage() {
     useDirectoryQueries(state);
   const people = users.data?.pages.flatMap((page) => page.data) ?? [];
   const total = users.data?.pages[0]?.pagination.total ?? 0;
-  const loading = waitingForSearch || users.isPending;
+  const loading = users.isPending;
+  const updating =
+    waitingForSearch ||
+    users.isPlaceholderData ||
+    (users.isFetching && !users.isFetchingNextPage);
   const activeFilters = [
     ...state.nationalities.map((value) => ({
       kind: "nationalities" as const,
@@ -47,7 +51,7 @@ export function DirectoryPage() {
         <FilterSidebar
           state={state}
           facets={facets.data}
-          loading={waitingForSearch || facets.isPending}
+          loading={facets.isPending}
           error={facets.error}
           retry={() => {
             void facets.refetch();
@@ -58,6 +62,7 @@ export function DirectoryPage() {
         <section
           className="flex min-h-0 min-w-0 flex-col"
           aria-label="Directory results"
+          aria-busy={loading || updating}
         >
           <div className="scrollbar-thin max-h-[50%] shrink-0 overflow-auto">
             <div className="flex flex-wrap items-center gap-3 tablet:gap-3.5">
@@ -178,9 +183,10 @@ export function DirectoryPage() {
                     </span>
                   </>
                 )}
-                {users.isFetching && !loading && !users.isFetchingNextPage && (
-                  <span className="ml-2 text-[10px] text-accent">
-                    Updating…
+                {updating && !loading && (
+                  <span className="ml-2">
+                    <Skeleton className="w-[70px]" />
+                    <span className="sr-only">Updating…</span>
                   </span>
                 )}
               </div>
@@ -243,10 +249,11 @@ export function DirectoryPage() {
                   total={total}
                   view={state.view}
                   hasNextPage={users.hasNextPage}
+                  updating={updating}
                   fetchingNext={users.isFetchingNextPage}
                   nextError={users.isFetchNextPageError ? users.error : null}
                   loadMore={() => {
-                    void users.fetchNextPage();
+                    if (!updating) void users.fetchNextPage();
                   }}
                 />
               </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { DirectoryView, User } from "../../types/directory";
 import { useVirtualWindow } from "../../hooks/useVirtualWindow";
 import { Avatar } from "../ui/Avatar";
@@ -13,6 +13,7 @@ interface Props {
   view: DirectoryView;
   hasNextPage: boolean;
   fetchingNext: boolean;
+  updating?: boolean;
   nextError: Error | null;
   loadMore: () => void;
 }
@@ -23,6 +24,7 @@ export function VirtualUserList({
   view,
   hasNextPage,
   fetchingNext,
+  updating = false,
   nextError,
   loadMore,
 }: Props) {
@@ -33,14 +35,20 @@ export function VirtualUserList({
   const { viewportRef, onScroll, width, start, end, totalHeight } =
     useVirtualWindow(rowCount, rowHeight, table ? 44 : 0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setColumns(!table && width >= 720 ? 2 : 1);
   }, [table, width]);
 
   useEffect(() => {
-    if (end >= rowCount - 2 && hasNextPage && !fetchingNext && !nextError)
+    if (
+      !updating &&
+      end >= rowCount - 2 &&
+      hasNextPage &&
+      !fetchingNext &&
+      !nextError
+    )
       loadMore();
-  }, [end, rowCount, hasNextPage, fetchingNext, nextError, loadMore]);
+  }, [end, rowCount, hasNextPage, fetchingNext, nextError, loadMore, updating]);
 
   const visibleRows = Array.from(
     { length: Math.max(0, end - start) },
@@ -163,10 +171,15 @@ export function VirtualUserList({
         </div>
       )}
       <div className="min-h-[72px] px-3 py-6 text-center text-[11px] text-muted [&_p]:mb-2.5 [&_p]:leading-[1.7]">
-        {fetchingNext ? (
+        {updating ? (
+          <div className="flex justify-center" role="status">
+            <Skeleton className="w-[120px]" />
+            {/* <span className="sr-only">Updating results…</span> */}
+          </div>
+        ) : fetchingNext ? (
           <div className="flex items-center justify-center gap-3" role="status">
             <Skeleton className="w-[90px]" />
-            <span>Loading more people…</span>
+            <span className="sr-only">Loading more people…</span>
           </div>
         ) : nextError ? (
           <div role="alert">
@@ -180,7 +193,7 @@ export function VirtualUserList({
             Load more people
           </Button>
         ) : (
-          <p>You’ve reached the end · {total.toLocaleString()} people</p>
+          <p>-- End of the list --</p>
         )}
       </div>
     </div>

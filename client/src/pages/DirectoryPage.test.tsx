@@ -1,3 +1,4 @@
+import userEvent from "@testing-library/user-event";
 import {
   act,
   fireEvent,
@@ -120,6 +121,49 @@ afterEach(() => {
 });
 
 describe("directory interactions", () => {
+  it.each(["cards", "table"])(
+    "keeps %s and filter options visible while filters update",
+    async (view) => {
+      renderApp(`/directory?view=${view}`);
+      await screen.findByRole("region", {
+        name: `User directory, ${view} view`,
+      });
+      const canada = await screen.findByRole("checkbox", {
+        name: "Canada, 45 matching people",
+      });
+      const pending: Array<() => void> = [];
+      vi.mocked(fetch).mockImplementation((input) => {
+        const url = new URL(String(input), "http://localhost");
+        if (url.searchParams.has("nationality")) {
+          return new Promise<Response>((resolve) => {
+            pending.push(() => resolve(apiResponse(input)));
+          });
+        }
+        return Promise.resolve(apiResponse(input));
+      });
+      fireEvent.click(canada);
+      await waitFor(() => expect(pending).toHaveLength(2));
+      expect(
+        screen.getByRole("region", { name: `User directory, ${view} view` }),
+      ).toBeInTheDocument();
+      expect(canada).toBeChecked();
+      expect(screen.queryByLabelText("Loading users")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText("Loading nationalities"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("Updating…")).toBeInTheDocument();
+      await act(async () => {
+        pending.forEach((resolve) => resolve());
+      });
+      await waitFor(() =>
+        expect(screen.queryByText("Updating…")).not.toBeInTheDocument(),
+      );
+      expect(
+        screen.getByRole("region", { name: `User directory, ${view} view` }),
+      ).not.toHaveTextContent("Beth");
+    },
+  );
+
   it("restores shared URL state and shows two hobbies plus the remaining count", async () => {
     renderApp(
       "/?q=Alex&nationality=Canada&hobby=Reading&sortBy=age&sortOrder=desc",
@@ -138,7 +182,16 @@ describe("directory interactions", () => {
     const first = screen.getAllByRole("article")[0];
     expect(within(first).getByText("Reading")).toBeInTheDocument();
     expect(within(first).getByText("Hiking")).toBeInTheDocument();
-    expect(within(first).getByText("+1")).toHaveAttribute("title", "Music");
+    await userEvent.click(
+      within(first).getByRole("button", { name: "1 more hobbies" }),
+    );
+    expect(
+      within(screen.getByRole("dialog", { name: "1 more hobbies" })).getByText(
+        "Music",
+      ),
+    ).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(within(first).queryByText("Music")).not.toBeInTheDocument();
     const requests = vi
       .mocked(fetch)
@@ -201,9 +254,10 @@ describe("directory interactions", () => {
       target: { value: "Beth" },
     });
     expect(screen.getByTestId("url").textContent).toContain("q=Beth");
-    expect(
-      screen.getByRole("status", { name: "Loading users" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Updating…")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText("Updating…")).not.toBeInTheDocument(),
+    );
     await waitFor(() =>
       expect(
         screen.getByRole("checkbox", { name: /Japan, 45/ }),

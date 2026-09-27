@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
 import { ApiError, getFacets, getUsers } from "../api/directory";
 import type { DirectoryState } from "../types/directory";
 import { filterParams } from "../utils/directoryState";
@@ -25,6 +29,7 @@ export function useDirectoryQueries(state: DirectoryState) {
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
+    placeholderData: keepPreviousData,
     enabled: !waitingForSearch,
     retry,
   });
@@ -32,6 +37,7 @@ export function useDirectoryQueries(state: DirectoryState) {
   const facets = useQuery({
     queryKey: ["facets", filterKey],
     queryFn: ({ signal }) => getFacets(new URLSearchParams(filterKey), signal),
+    placeholderData: keepPreviousData,
     enabled: !waitingForSearch,
     retry,
   });
