@@ -38,28 +38,32 @@ function getRandomElements(array, count) {
   return shuffled.slice(0, count);
 }
 
-async function seedDatabase(numUsers = 1000) {
-  console.log(`Seeding database with ${numUsers} user records...`);
+async function seedDatabase(numUsers = 1000, { onlyIfEmpty = false } = {}) {
+  if (!Number.isSafeInteger(numUsers) || numUsers < 1) {
+    throw new Error('Seed user count must be a positive integer');
+  }
   await runMigrations();
 
   const db = await getDbConnection();
 
-  // Clear existing data
-  await db.exec('DELETE FROM user_hobbies;');
-  await db.exec('DELETE FROM hobbies;');
-  await db.exec('DELETE FROM users;');
-
-  // Insert All Hobbies into lookup table
-  for (const hobby of HOBBIES_LIST) {
-    await db.run('INSERT OR IGNORE INTO hobbies (name) VALUES (?)', hobby);
-  }
-
-  // Cache Hobby Name -> ID mapping
-  const hobbyRows = await db.all('SELECT id, name FROM hobbies');
-  const hobbyMap = new Map(hobbyRows.map(h => [h.name, h.id]));
-
-  await db.exec('BEGIN TRANSACTION;');
+  // Lock before checking so separate startup processes cannot both seed.
+  await db.exec('BEGIN IMMEDIATE;');
   try {
+    if (onlyIfEmpty && await db.get('SELECT 1 FROM users LIMIT 1')) {
+      await db.exec('COMMIT;');
+      console.log('Existing directory found; skipping sample data.');
+      return;
+    }
+
+    console.log(`Seeding database with ${numUsers} user records...`);
+    // Cleanup and inserts commit together; a failed seed preserves prior data.
+    await db.exec('DELETE FROM user_hobbies; DELETE FROM hobbies; DELETE FROM users;');
+    for (const hobby of HOBBIES_LIST) {
+      await db.run('INSERT INTO hobbies (name) VALUES (?)', hobby);
+    }
+    const hobbyRows = await db.all('SELECT id, name FROM hobbies');
+    const hobbyMap = new Map(hobbyRows.map(h => [h.name, h.id]));
+
     // Generate Users & Assign 0-10 Hobbies per user
     for (let i = 1; i <= numUsers; i++) {
       const firstName = SAMPLE_FIRST_NAMES[Math.floor(Math.random() * SAMPLE_FIRST_NAMES.length)];
@@ -96,5 +100,8 @@ async function seedDatabase(numUsers = 1000) {
 module.exports = { seedDatabase };
 
 if (require.main === module) {
-  seedDatabase().catch(console.error);
+  seedDatabase().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }

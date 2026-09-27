@@ -77,5 +77,8 @@ async function runMigrations() {
 module.exports = { runMigrations };
 
 if (require.main === module) {
-  runMigrations().catch(console.error);
+  runMigrations().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
