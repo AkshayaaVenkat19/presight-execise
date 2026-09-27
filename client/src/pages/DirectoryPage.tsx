@@ -1,3 +1,5 @@
+import { ApiError } from "../api/http";
+import { filterParams } from "../utils/directoryState";
 import { useDirectoryState } from "../hooks/useDirectoryState";
 import { useDirectoryQueries } from "../hooks/useDirectoryQueries";
 import type { SortField } from "../types/directory";
@@ -29,6 +31,19 @@ export function DirectoryPage() {
     })),
     ...state.hobbies.map((value) => ({ kind: "hobbies" as const, value })),
   ];
+  const hasCriteria = filterParams(state).size > 0;
+  const invalidRequest =
+    users.error instanceof ApiError &&
+    (users.error.status === 400 || users.error.status === 422);
+  const unavailable =
+    users.error instanceof ApiError &&
+    (users.error.status === 0 || users.error.status >= 500);
+  const errorTitle = invalidRequest
+    ? "Invalid directory request"
+    : unavailable
+      ? "Directory temporarily unavailable"
+      : "Couldn’t load the directory";
+
   const chipClasses =
     "inline-flex max-w-full items-center gap-[7px] rounded-[7px] bg-accent-soft px-[9px] py-1.5 text-[11px] wrap-anywhere text-accent";
   const textButtonClasses =
@@ -177,7 +192,7 @@ export function DirectoryPage() {
                 role="status"
                 aria-live="polite"
               >
-                {loading ? (
+                {loading || (updating && people.length === 0) ? (
                   <Skeleton className="w-[90px]" />
                 ) : users.isError && !users.data ? (
                   "Results unavailable"
@@ -231,26 +246,48 @@ export function DirectoryPage() {
             ) : users.isError && !users.data ? (
               <StatusPanel
                 error
-                title="Couldn’t load the directory"
-                message={users.error.message}
+                title={errorTitle}
+                message={
+                  invalidRequest
+                    ? `${users.error.message} Change your search or reset the filters to try again.`
+                    : users.error.message
+                }
               >
-                <Button
-                  onClick={() => {
-                    void users.refetch();
-                  }}
-                >
-                  Try again
-                </Button>
-                <Button variant="secondary" onClick={clearFilters}>
-                  Reset filters
-                </Button>
+                {!invalidRequest && (
+                  <Button onClick={() => void users.refetch()}>
+                    Try again
+                  </Button>
+                )}
+                {(invalidRequest || hasCriteria) && (
+                  <Button
+                    variant={invalidRequest ? "primary" : "secondary"}
+                    onClick={clearFilters}
+                  >
+                    Reset filters
+                  </Button>
+                )}
               </StatusPanel>
+            ) : people.length === 0 && updating ? (
+              <DirectorySkeleton
+                table={state.view === "table"}
+                label="Updating results…"
+              />
             ) : people.length === 0 ? (
               <StatusPanel
-                title="No people found"
-                message="Try a different name or remove a filter to broaden your search."
+                title={hasCriteria ? "No search results" : "No users yet"}
+                message={
+                  hasCriteria
+                    ? "Try a different name or remove a filter to broaden your search."
+                    : "The directory is empty. Check again later."
+                }
               >
-                <Button onClick={clearFilters}>Clear filters</Button>
+                {hasCriteria ? (
+                  <Button onClick={clearFilters}>Clear filters</Button>
+                ) : (
+                  <Button onClick={() => void users.refetch()}>
+                    Refresh directory
+                  </Button>
+                )}
               </StatusPanel>
             ) : (
               <div className="flex h-full min-h-0 flex-col">

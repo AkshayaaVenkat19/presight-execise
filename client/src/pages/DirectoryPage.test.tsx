@@ -121,6 +121,144 @@ afterEach(() => {
 });
 
 describe("directory interactions", () => {
+  it("shows initial loading before displaying successful results", async () => {
+    const pending: Array<() => void> = [];
+    vi.mocked(fetch).mockImplementation((input) => {
+      if (String(input) === "/api/auth/me")
+        return Promise.resolve(apiResponse(input));
+      return new Promise<Response>((resolve) =>
+        pending.push(() => resolve(apiResponse(input))),
+      );
+    });
+    renderApp();
+    expect(await screen.findByLabelText("Loading users")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Directory results" }),
+    ).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText("No users yet")).not.toBeInTheDocument();
+    await act(async () => pending.forEach((resolve) => resolve()));
+    expect(
+      await screen.findByRole("region", { name: "User directory, cards view" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Directory results" }),
+    ).toHaveAttribute("aria-busy", "false");
+  });
+
+  it("distinguishes an empty directory and supports refreshing it", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) =>
+      String(input).startsWith("/api/users")
+        ? json({
+            data: [],
+            pagination: {
+              page: 1,
+              limit: 30,
+              total: 0,
+              totalPages: 0,
+              hasMore: false,
+            },
+          })
+        : apiResponse(input),
+    );
+    renderApp();
+    expect(await screen.findByText("No users yet")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Clear filters" }),
+    ).not.toBeInTheDocument();
+    vi.mocked(fetch).mockImplementation(async (input) => apiResponse(input));
+    fireEvent.click(screen.getByRole("button", { name: "Refresh directory" }));
+    expect(
+      await screen.findByRole("region", { name: "User directory, cards view" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not announce empty results while a new search is pending", async () => {
+    renderApp("/directory?q=Nobody");
+    await screen.findByText("No search results");
+    const pending: Array<() => void> = [];
+    vi.mocked(fetch).mockImplementation(
+      (input) =>
+        new Promise<Response>((resolve) => {
+          pending.push(() => resolve(apiResponse(input)));
+        }),
+    );
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "Alex" },
+    });
+    const updatingSkeleton = await screen.findByRole("status", {
+      name: "Updating results…",
+    });
+    expect(updatingSkeleton.querySelector(".skeleton")).toBeInTheDocument();
+    expect(screen.queryByText("No search results")).not.toBeInTheDocument();
+    await waitFor(() => expect(pending).toHaveLength(2));
+    expect(
+      screen.getByRole("region", { name: "Directory results" }),
+    ).toHaveAttribute("aria-busy", "true");
+    await act(async () => pending.forEach((resolve) => resolve()));
+    expect(
+      await screen.findByRole("region", { name: "User directory, cards view" }),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      0,
+      "Directory temporarily unavailable",
+      "Unable to connect. Please try again.",
+    ],
+    [503, "Directory temporarily unavailable", "Service unavailable"],
+    [500, "Directory temporarily unavailable", "Database query failed"],
+    [404, "Couldn’t load the directory", "Endpoint not found"],
+  ])(
+    "handles failure status %s with retry recovery",
+    async (status, title, message) => {
+      vi.mocked(fetch).mockImplementation(async (input) => {
+        if (!String(input).startsWith("/api/users")) return apiResponse(input);
+        if (status === 0) throw new TypeError("Failed to fetch");
+        return json({ error: { message } }, status as number);
+      });
+      renderApp();
+      expect(
+        await screen.findByRole("heading", { name: title as string }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(message as string);
+      expect(screen.queryByText("No users yet")).not.toBeInTheDocument();
+      vi.mocked(fetch).mockImplementation(async (input) => apiResponse(input));
+      fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+      expect(
+        await screen.findByRole("region", {
+          name: "User directory, cards view",
+        }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each([400, 422])(
+    "offers correction for invalid requests (%s)",
+    async (status) => {
+      vi.mocked(fetch).mockImplementation(async (input) =>
+        String(input).startsWith("/api/users") && String(input).includes("q=")
+          ? json({ error: { message: "Search is invalid" } }, status)
+          : apiResponse(input),
+      );
+      renderApp("/directory?q=invalid");
+      expect(
+        await screen.findByText("Invalid directory request"),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent("Search is invalid");
+      expect(
+        screen.queryByRole("button", { name: "Try again" }),
+      ).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Reset filters" }));
+      expect(
+        await screen.findByRole("region", {
+          name: "User directory, cards view",
+        }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("searchbox")).toHaveValue("");
+    },
+  );
+
   it.each(["cards", "table"])(
     "keeps %s and filter options visible while filters update",
     async (view) => {
@@ -309,7 +447,7 @@ describe("directory interactions", () => {
 
   it("shows an empty state while keeping selected zero-count filters removable", async () => {
     renderApp("/directory?q=Nobody&nationality=Canada");
-    expect(await screen.findByText("No people found")).toBeInTheDocument();
+    expect(await screen.findByText("No search results")).toBeInTheDocument();
     expect(
       await screen.findByRole("checkbox", { name: /Canada, 0/ }),
     ).toBeChecked();
@@ -426,7 +564,7 @@ describe("directory interactions", () => {
     );
     renderApp();
     expect(
-      await screen.findByText("Couldn’t load the directory"),
+      await screen.findByText("Directory temporarily unavailable"),
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("button", { name: "Retry filters" }),
@@ -446,7 +584,7 @@ describe("directory interactions", () => {
     "shows refresh errors while retaining cached results and filters (%s)",
     async (search) => {
       const { client } = renderApp(`/directory${search}`);
-      if (search) await screen.findByText("No people found");
+      if (search) await screen.findByText("No search results");
       else
         await screen.findByRole("region", {
           name: "User directory, cards view",
@@ -467,7 +605,7 @@ describe("directory interactions", () => {
         await screen.findByText(/Showing previously loaded counts/),
       ).toBeInTheDocument();
       if (search)
-        expect(screen.getByText("No people found")).toBeInTheDocument();
+        expect(screen.getByText("No search results")).toBeInTheDocument();
       else {
         expect(screen.getAllByRole("article").length).toBeGreaterThan(0);
         expect(

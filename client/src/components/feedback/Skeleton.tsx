@@ -17,14 +17,51 @@ export function Skeleton({
   );
 }
 
-export function DirectorySkeleton({ table = false }: { table?: boolean }) {
+export function LoadingIndicator({
+  label,
+  className = "w-[90px]",
+}: {
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span className="inline-flex items-center" role="status">
+      <Skeleton className={className} />
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
+export function SessionSkeleton() {
+  return (
+    <div
+      className="mx-auto flex w-full max-w-[400px] flex-col gap-6 rounded-2xl border border-border bg-surface px-7 py-10 tablet:mx-0"
+      role="status"
+      aria-label="Checking your session"
+    >
+      <span className="sr-only">Checking your session…</span>
+      <Skeleton className="mx-auto w-32" />
+      <Skeleton className="h-12! w-full rounded-full!" />
+      <Skeleton className="h-12! w-full rounded-full!" />
+      <Skeleton className="h-11! w-full rounded-full!" />
+    </div>
+  );
+}
+
+export function DirectorySkeleton({
+  table = false,
+  label = "Loading users",
+}: {
+  table?: boolean;
+  label?: string;
+}) {
   return (
     <div
       className={`grid ${table ? "grid-cols-1" : "grid-cols-1 gap-4 desktop:grid-cols-2"}`}
       role="status"
-      aria-label="Loading users"
+      aria-label={label}
     >
-      <span className="sr-only">Loading users</span>
+      <span className="sr-only">{label}</span>
       {Array.from({ length: 6 }, (_, index) => (
         <div
           className={`flex gap-3.5 border border-border bg-surface p-6 ${table ? "h-[88px]" : "h-[180px] rounded-xl"}`}

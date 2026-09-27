@@ -177,7 +177,11 @@ export function VirtualUserList({
       )}
       <div className="min-h-[72px] px-3 py-6 text-center text-[11px] text-muted [&_p]:mb-2.5 [&_p]:leading-[1.7]">
         {updating ? (
-          <div className="flex justify-center" role="status">
+          <div
+            className="flex justify-center"
+            role="status"
+            aria-label="Updating results"
+          >
             <Skeleton className="w-[120px]" />
             {/* <span className="sr-only">Updating results…</span> */}
           </div>

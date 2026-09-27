@@ -1,3 +1,4 @@
+import { SessionSkeleton } from "../feedback/Skeleton";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/Button";
@@ -5,7 +6,7 @@ import { Button } from "../ui/Button";
 export function RequireAuth() {
   const { user, loading, error, refresh } = useAuth();
   const location = useLocation();
-  if (loading) return <p role="status">Checking your session…</p>;
+  if (loading) return <SessionSkeleton />;
   if (error)
     return (
       <div>

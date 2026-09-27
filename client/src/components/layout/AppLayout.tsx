@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "../feedback/Skeleton";
 import { Link, NavLink, Outlet, useMatch } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { Icon } from "../ui/Icon";
@@ -92,7 +93,11 @@ export function AppLayout() {
                 className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-danger enabled:hover:bg-danger-soft"
               >
                 <Icon name="sign-out" />
-                {signingOut ? "Signing out…" : "Sign out"}
+                {signingOut ? (
+                  <LoadingIndicator label="Signing out…" />
+                ) : (
+                  "Sign out"
+                )}
               </button>
             )}
           </Popover>

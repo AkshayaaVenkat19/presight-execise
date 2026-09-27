@@ -1,3 +1,4 @@
+import { LoadingIndicator, SessionSkeleton } from "../feedback/Skeleton";
 import { useState, type FormEvent } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,7 +18,7 @@ export function Login() {
   const destination = /^\/directory(?:\?|$)/.test(returnTo)
     ? returnTo
     : "/directory";
-  if (loading) return <p role="status">Checking your session…</p>;
+  if (loading) return <SessionSkeleton />;
   if (user) return <Navigate to={destination} replace />;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -102,7 +103,14 @@ export function Login() {
           disabled={pending}
           className="mt-1 w-full rounded-full! bg-white! text-slate-900! shadow-sm hover:bg-slate-100!"
         >
-          {pending ? "Signing in…" : "Sign in"}
+          {pending ? (
+            <LoadingIndicator
+              label="Signing in…"
+              className="w-16 bg-slate-200!"
+            />
+          ) : (
+            "Sign in"
+          )}
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-text/80">
