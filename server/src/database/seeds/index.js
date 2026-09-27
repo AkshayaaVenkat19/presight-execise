@@ -29,16 +29,21 @@ const HOBBIES_LIST = [
   'Woodworking', 'Knitting', 'Surfing', 'Rock Climbing', 'Archery', 'Dancing', 'Origami'
 ];
 
+const DEFAULT_USER_COUNT = 1000;
+const MIN_AGE = 18;
+const MAX_AGE = 75;
+const MAX_HOBBIES_PER_USER = 10;
+const AVATAR_SIZE = 150;
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 function getRandomElements(array, count) {
   const shuffled = [...array].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
-async function seedDatabase(numUsers = 1000, { onlyIfEmpty = false } = {}) {
+async function seedDatabase(numUsers = DEFAULT_USER_COUNT, { onlyIfEmpty = false } = {}) {
   if (!Number.isSafeInteger(numUsers) || numUsers < 1) {
     throw new Error('Seed user count must be a positive integer');
   }
@@ -68,9 +73,9 @@ async function seedDatabase(numUsers = 1000, { onlyIfEmpty = false } = {}) {
     for (let i = 1; i <= numUsers; i++) {
       const firstName = SAMPLE_FIRST_NAMES[Math.floor(Math.random() * SAMPLE_FIRST_NAMES.length)];
       const lastName = SAMPLE_LAST_NAMES[Math.floor(Math.random() * SAMPLE_LAST_NAMES.length)];
-      const age = getRandomInt(18, 75);
+      const age = getRandomInt(MIN_AGE, MAX_AGE);
       const nationality = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
-      const avatar = `https://i.pravatar.cc/150?u=${i}`;
+      const avatar = `https://i.pravatar.cc/${AVATAR_SIZE}?u=${i}`;
 
       const res = await db.run(
         'INSERT INTO users (avatar, first_name, last_name, age, nationality) VALUES (?, ?, ?, ?, ?)',
@@ -79,7 +84,7 @@ async function seedDatabase(numUsers = 1000, { onlyIfEmpty = false } = {}) {
       const userId = res.lastID;
 
       // Assign 0 to 10 random hobbies per user as per README specs
-      const hobbyCount = getRandomInt(0, 10);
+      const hobbyCount = getRandomInt(0, MAX_HOBBIES_PER_USER);
       const selectedHobbies = getRandomElements(HOBBIES_LIST, hobbyCount);
 
       for (const hobbyName of selectedHobbies) {

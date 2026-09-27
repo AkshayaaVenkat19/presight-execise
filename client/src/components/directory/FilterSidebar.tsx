@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { DirectoryState, Facets } from "../../types/directory";
+import { MAX_SELECTED_FILTERS } from "../../constants/ui";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
 import { FilterGroup } from "./FilterGroup";
@@ -90,7 +91,7 @@ export function FilterSidebar({
               selected={state.nationalities}
               onToggle={(value) => toggle("nationalities", value)}
               loading={loading}
-              maxSelected={50}
+              maxSelected={MAX_SELECTED_FILTERS}
             />
             <FilterGroup
               title="Hobbies"

@@ -1,4 +1,4 @@
-import { requestJson } from "./http";
+import { postJson, requestJson } from "./http";
 
 export interface AuthUser {
   id: number;
@@ -14,19 +14,9 @@ export async function getSession(signal: AbortSignal) {
 }
 
 export async function login(credentials: Credentials) {
-  return (
-    await requestJson<{ data: AuthUser }>("auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials),
-    })
-  ).data;
+  return (await postJson<{ data: AuthUser }>("auth/login", credentials)).data;
 }
 
 export function logout() {
-  return requestJson("auth/logout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: "{}",
-  });
+  return postJson("auth/logout");
 }

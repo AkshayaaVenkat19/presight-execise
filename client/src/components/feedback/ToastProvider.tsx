@@ -7,6 +7,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { TOAST_DISMISS_MS } from "../../constants/ui";
+
 type Toast = { message: string; type: "success" | "error" };
 const ToastContext = createContext<
   (message: string, type: Toast["type"]) => void
@@ -21,7 +23,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
   useEffect(() => {
     if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 6000);
+    const timer = window.setTimeout(() => setToast(null), TOAST_DISMISS_MS);
     return () => window.clearTimeout(timer);
   }, [toast]);
   return (

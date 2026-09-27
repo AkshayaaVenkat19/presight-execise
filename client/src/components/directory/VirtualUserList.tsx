@@ -1,5 +1,11 @@
 import { memo, useEffect, useLayoutEffect, useState } from "react";
 import type { DirectoryView, User } from "../../types/directory";
+import {
+  CARD_ROW_HEIGHT_PX,
+  CARD_TWO_COLUMN_BREAKPOINT_PX,
+  TABLE_HEADER_HEIGHT_PX,
+  TABLE_ROW_HEIGHT_PX,
+} from "../../constants/ui";
 import { useVirtualWindow } from "../../hooks/useVirtualWindow";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
@@ -30,13 +36,13 @@ export const VirtualUserList = memo(function VirtualUserList({
 }: Props) {
   const [columns, setColumns] = useState(1);
   const table = view === "table";
-  const rowHeight = table ? 55 : 196;
+  const rowHeight = table ? TABLE_ROW_HEIGHT_PX : CARD_ROW_HEIGHT_PX;
   const rowCount = Math.ceil(users.length / (table ? 1 : columns));
   const { viewportRef, onScroll, width, start, end, totalHeight } =
-    useVirtualWindow(rowCount, rowHeight, table ? 44 : 0);
+    useVirtualWindow(rowCount, rowHeight, table ? TABLE_HEADER_HEIGHT_PX : 0);
 
   useLayoutEffect(() => {
-    setColumns(!table && width >= 720 ? 2 : 1);
+    setColumns(!table && width >= CARD_TWO_COLUMN_BREAKPOINT_PX ? 2 : 1);
   }, [table, width]);
 
   useEffect(() => {

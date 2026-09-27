@@ -1,11 +1,16 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
+import {
+  DEFAULT_VIEWPORT_HEIGHT_PX,
+  VIRTUAL_OVERSCAN_ROWS,
+} from "../constants/ui";
+
 export function calculateWindow(
   count: number,
   rowHeight: number,
   scrollTop: number,
   height: number,
-  overscan = 3,
+  overscan = VIRTUAL_OVERSCAN_ROWS,
 ) {
   const first = Math.floor(Math.max(0, scrollTop) / rowHeight);
   const start = Math.min(Math.max(0, first - overscan), Math.max(0, count - 1));
@@ -28,7 +33,7 @@ export function useVirtualWindow(
   const frame = useRef<number | null>(null);
   const [metrics, setMetrics] = useState({
     width: 0,
-    height: 480,
+    height: DEFAULT_VIEWPORT_HEIGHT_PX,
     scrollTop: 0,
   });
 
@@ -38,7 +43,7 @@ export function useVirtualWindow(
     const measure = () => {
       const next = {
         width: viewport.clientWidth,
-        height: viewport.clientHeight || 480,
+        height: viewport.clientHeight || DEFAULT_VIEWPORT_HEIGHT_PX,
         scrollTop: viewport.scrollTop,
       };
       setMetrics((current) =>

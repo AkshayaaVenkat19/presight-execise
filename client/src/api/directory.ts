@@ -1,5 +1,6 @@
 import type { Facets, UserPage } from "../types/directory";
 
+import { PAGE_SIZE } from "../constants/ui";
 import { requestJson } from "./http";
 export { ApiError } from "./http";
 
@@ -18,7 +19,7 @@ export function getUsers(
 ): Promise<UserPage> {
   const query = new URLSearchParams(params);
   query.set("page", String(page));
-  query.set("limit", "30");
+  query.set("limit", String(PAGE_SIZE));
   return getJson<UserPage>("users", query, signal);
 }
 
