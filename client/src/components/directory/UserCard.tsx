@@ -1,8 +1,9 @@
+import { memo } from "react";
 import type { User } from "../../types/directory";
 import { Avatar } from "../ui/Avatar";
 import { HobbyTags } from "./HobbyTags";
 
-export function UserCard({ user }: { user: User }) {
+export const UserCard = memo(function UserCard({ user }: { user: User }) {
   return (
     <article className="h-[180px] overflow-hidden rounded-xl border border-border bg-surface px-4 py-5 shadow-panel hover:border-accent compact:p-[22px]">
       <div className="flex items-center gap-3.5">
@@ -32,4 +33,4 @@ export function UserCard({ user }: { user: User }) {
       </div>
     </article>
   );
-}
+});

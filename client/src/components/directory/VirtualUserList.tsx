@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useState } from "react";
 import type { DirectoryView, User } from "../../types/directory";
 import { useVirtualWindow } from "../../hooks/useVirtualWindow";
 import { Avatar } from "../ui/Avatar";
@@ -18,7 +18,7 @@ interface Props {
   loadMore: () => void;
 }
 
-export function VirtualUserList({
+export const VirtualUserList = memo(function VirtualUserList({
   users,
   total,
   view,
@@ -151,7 +151,7 @@ export function VirtualUserList({
           {visibleRows.map((index) => (
             <div
               className="absolute inset-x-0 grid gap-4 pb-4"
-              key={index}
+              key={users[index * columns].id}
               style={{
                 top: index * rowHeight,
                 height: rowHeight,
@@ -207,4 +207,4 @@ export function VirtualUserList({
       </div>
     </div>
   );
-}
+});

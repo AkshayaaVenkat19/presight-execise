@@ -35,12 +35,20 @@ export function useVirtualWindow(
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    const measure = () =>
-      setMetrics({
+    const measure = () => {
+      const next = {
         width: viewport.clientWidth,
         height: viewport.clientHeight || 480,
         scrollTop: viewport.scrollTop,
-      });
+      };
+      setMetrics((current) =>
+        current.width === next.width &&
+        current.height === next.height &&
+        current.scrollTop === next.scrollTop
+          ? current
+          : next,
+      );
+    };
     measure();
     const observer =
       typeof ResizeObserver !== "undefined"
@@ -61,10 +69,11 @@ export function useVirtualWindow(
       frame.current = null;
       const viewport = viewportRef.current;
       if (viewport)
-        setMetrics((current) => ({
-          ...current,
-          scrollTop: viewport.scrollTop,
-        }));
+        setMetrics((current) =>
+          current.scrollTop === viewport.scrollTop
+            ? current
+            : { ...current, scrollTop: viewport.scrollTop },
+        );
     });
   }
 

@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { ApiError } from "../api/http";
 import { filterParams } from "../utils/directoryState";
 import { useDirectoryState } from "../hooks/useDirectoryState";
@@ -17,13 +18,20 @@ export function DirectoryPage() {
   const { state, update, toggle, clearFilters } = useDirectoryState();
   const { users, facets, waitingForSearch, userKey } =
     useDirectoryQueries(state);
-  const people = users.data?.pages.flatMap((page) => page.data) ?? [];
+  const people = useMemo(
+    () => users.data?.pages.flatMap((page) => page.data) ?? [],
+    [users.data],
+  );
   const total = users.data?.pages[0]?.pagination.total ?? 0;
   const loading = users.isPending;
   const updating =
     waitingForSearch ||
     users.isPlaceholderData ||
     (users.isFetching && !users.isFetchingNextPage);
+  const { fetchNextPage, hasNextPage } = users;
+  const loadMore = useCallback(() => {
+    if (!updating && hasNextPage) void fetchNextPage({ cancelRefetch: false });
+  }, [updating, hasNextPage, fetchNextPage]);
   const activeFilters = [
     ...state.nationalities.map((value) => ({
       kind: "nationalities" as const,
@@ -300,10 +308,7 @@ export function DirectoryPage() {
                   updating={updating}
                   fetchingNext={users.isFetchingNextPage}
                   nextError={users.isFetchNextPageError ? users.error : null}
-                  loadMore={() => {
-                    if (!updating && users.hasNextPage)
-                      void users.fetchNextPage({ cancelRefetch: false });
-                  }}
+                  loadMore={loadMore}
                 />
               </div>
             )}
