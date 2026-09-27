@@ -30,7 +30,7 @@ export function AppLayout() {
   const { theme, toggleTheme } = useTheme();
   return (
     <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      className="flex h-dvh flex-col overflow-hidden bg-cover bg-center bg-no-repeat"
       style={
         isLoginPage
           ? {
@@ -45,7 +45,7 @@ export function AppLayout() {
       >
         Skip to content
       </a>
-      <header className="h-[40px] border-b border-border bg-surface tablet:h-15">
+      <header className="h-[40px] shrink-0 border-b border-border bg-surface tablet:h-15">
         <div className="mx-auto flex h-full max-w-[1440px] items-center gap-[18px] px-4 compact:gap-7 compact:px-5 tablet:gap-16 tablet:px-7 desktop:px-12">
           <Link
             className="inline-flex items-center gap-2.5 text-[22px] font-bold tracking-[-1px] tablet:text-[25px]"
@@ -77,7 +77,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-surface-soft hover:text-accent"
+              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-surface-soft hover:text-accent"
             >
               <Icon name={theme === "light" ? "moon" : "sun"} />
               Switch to {theme === "light" ? "dark" : "light"} theme
@@ -87,7 +87,7 @@ export function AppLayout() {
                 type="button"
                 disabled={signingOut}
                 onClick={handleSignOut}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-danger enabled:hover:bg-danger-soft"
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-danger enabled:hover:bg-danger-soft"
               >
                 <Icon name="sign-out" />
                 {signingOut ? "Signing out…" : "Sign out"}
@@ -100,8 +100,8 @@ export function AppLayout() {
         id="main-content"
         className={
           isLoginPage
-            ? "mx-auto flex min-h-[calc(100svh-40px)] max-w-[1440px] items-center px-4 py-10 compact:px-5 tablet:min-h-[calc(100svh-60px)] tablet:px-12 desktop:px-24"
-            : "mx-auto min-h-[calc(100vh-144px)] max-w-[1440px] px-4 py-[26px] compact:px-5 compact:py-7 tablet:px-7 tablet:py-[34px] desktop:px-12 desktop:pt-[46px] desktop:pb-9"
+            ? "mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-auto px-4 py-4 compact:px-5 tablet:px-12 tablet:py-10 desktop:px-24 [&>section]:my-auto [&>section]:shrink-0"
+            : "mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-hidden px-4 py-[clamp(8px,2dvh,26px)] compact:px-5 tablet:px-7 desktop:px-12"
         }
       >
         <Outlet />

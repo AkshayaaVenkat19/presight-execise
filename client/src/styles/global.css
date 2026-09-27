@@ -61,7 +61,7 @@
     --on-accent: #ffffff;
     --support: var(--brand-green);
     --support-soft: color-mix(in srgb, var(--brand-teal) 10%, var(--surface));
-    --danger: #b54141;
+    --danger: #E55451;
     --danger-soft: #fff1f1;
     --shadow: 0 3px 14px rgb(19 43 67 / 5%);
     color-scheme: light;
@@ -81,7 +81,7 @@
     --support: color-mix(in srgb, var(--brand-teal) 48%, #ffffff);
     --support-soft: color-mix(in srgb, var(--brand-teal) 18%, var(--surface));
     --danger: #ffacac;
-    --danger-soft: #3d252c;
+    --danger-soft: #DC281F;
     --shadow: 0 3px 14px rgb(0 0 0 / 16%);
     color-scheme: dark;
   }

@@ -26,14 +26,14 @@ export function FilterGroup({
       .map((value) => ({ value, count: 0 })),
   ];
   return (
-    <fieldset className="m-0 min-w-0 border-0 p-0 [&+fieldset]:mt-6 [&+fieldset]:border-t [&+fieldset]:border-border [&+fieldset]:pt-6">
-      <legend className="mb-3.5 flex w-full items-center justify-between p-0 text-xs font-semibold">
+    <fieldset className="m-0 flex min-h-0 min-w-0 flex-col border-0 p-0">
+      <legend className="mb-1 flex w-full shrink-0 items-center tablet:mb-3.5 justify-between p-0 text-xs font-semibold">
         {title}
         <span className="text-[10px] font-normal text-muted">Top 20</span>
       </legend>
       {loading ? (
         <div
-          className="grid gap-[19px] py-1.5"
+          className="scrollbar-thin grid min-h-0 flex-1 gap-[19px] overflow-y-auto py-1.5"
           role="status"
           aria-label={`Loading ${title.toLowerCase()}`}
         >
@@ -42,11 +42,11 @@ export function FilterGroup({
           ))}
         </div>
       ) : options.length === 0 ? (
-        <p className="text-xs leading-relaxed text-muted">
+        <p className="shrink-0 text-xs leading-relaxed text-muted">
           No matching {title.toLowerCase()}.
         </p>
       ) : (
-        <div className="scrollbar-thin -m-[3px] max-h-[220px] overflow-y-auto p-[3px] tablet:max-h-[286px]">
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-contain p-[3px]">
           {options.map(({ value, count }) => (
             <label
               className="flex cursor-pointer items-center gap-[9px] py-[7px] text-xs"
@@ -72,7 +72,7 @@ export function FilterGroup({
         </div>
       )}
       {selected.length >= maxSelected && (
-        <p className="text-xs leading-relaxed text-muted">
+        <p className="shrink-0 text-xs leading-relaxed text-muted">
           Up to {maxSelected} selections allowed.
         </p>
       )}

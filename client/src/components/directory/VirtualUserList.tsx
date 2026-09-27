@@ -52,7 +52,7 @@ export function VirtualUserList({
     "h-[88px] overflow-hidden text-ellipsis whitespace-nowrap border-b border-border px-[18px] text-xs";
   return (
     <div
-      className={`scrollbar-thin h-[62vh] min-h-[380px] overflow-auto overscroll-contain [overflow-anchor:none] tablet:h-[clamp(420px,65vh,720px)] tablet:min-h-0 ${table ? "rounded-xl border border-border bg-surface" : "pt-px pr-1 pl-px"}`}
+      className={`scrollbar-thin min-h-0 flex-1 overflow-auto overscroll-contain [overflow-anchor:none] ${table ? "rounded-xl border border-border bg-surface" : "pt-px pr-1 pl-px"}`}
       ref={viewportRef}
       onScroll={onScroll}
       tabIndex={0}

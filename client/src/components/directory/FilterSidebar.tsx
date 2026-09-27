@@ -27,10 +27,10 @@ export function FilterSidebar({
   const count = state.nationalities.length + state.hobbies.length;
   return (
     <aside
-      className="overflow-hidden rounded-[14px] border border-border bg-surface shadow-panel"
+      className="flex max-h-[30dvh] min-h-0 flex-col overflow-hidden rounded-[14px] border border-border bg-surface shadow-panel tablet:max-h-none"
       aria-label="Directory filters"
     >
-      <div className="flex items-center justify-between border-b border-border px-4 py-3.5 tablet:px-5 tablet:py-[21px]">
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3.5 tablet:px-5 tablet:py-[9px]">
         <h2 className="flex items-center gap-[9px] text-sm font-semibold">
           <Icon className="text-muted" name="filter" />
           Filters
@@ -50,7 +50,7 @@ export function FilterSidebar({
         </button>
       </div>
       <button
-        className="flex w-full items-center justify-between bg-surface px-4 py-3 text-xs text-muted tablet:hidden"
+        className="flex w-full shrink-0 items-center justify-between bg-surface px-4 py-3 text-xs text-muted tablet:hidden"
         type="button"
         aria-expanded={open}
         aria-controls="filter-options"
@@ -61,14 +61,14 @@ export function FilterSidebar({
       </button>
       <div
         id="filter-options"
-        className={`border-border px-5 pt-[18px] pb-[22px] tablet:block tablet:border-t-0 ${open ? "block border-t" : "hidden"}`}
+        className={`min-h-0 flex-1 flex-col overflow-hidden border-border px-4 py-2 tablet:flex tablet:border-t-0 tablet:px-5 tablet:pt-[18px] tablet:pb-[22px] ${open ? "flex border-t" : "hidden"}`}
       >
-        <p className="mb-[26px] text-[11px] leading-[1.7] text-muted">
-          Narrow your search. Counts reflect the current results.
+        <p className="mb-2 shrink-0 text-[11px] tablet:mb-5 leading-[1.7] text-muted">
+          Counts reflect the current results.
         </p>
         {error && !loading ? (
           <div
-            className="text-xs leading-relaxed text-muted [&>p]:mb-3"
+            className="scrollbar-thin min-h-0 overflow-y-auto text-xs leading-relaxed text-muted [&>p]:mb-3"
             role="alert"
           >
             <p>Could not load filter counts</p>
@@ -78,7 +78,7 @@ export function FilterSidebar({
             </Button>
           </div>
         ) : (
-          <>
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)] gap-3 tablet:grid-cols-1 tablet:grid-rows-[repeat(2,minmax(0,1fr))] tablet:gap-6">
             <FilterGroup
               title="Nationalities"
               values={facets?.nationalities ?? []}
@@ -95,7 +95,7 @@ export function FilterSidebar({
               loading={loading}
               maxSelected={10}
             />
-          </>
+          </div>
         )}
       </div>
     </aside>
