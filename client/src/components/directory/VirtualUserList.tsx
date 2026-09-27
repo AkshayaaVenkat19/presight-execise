@@ -30,7 +30,7 @@ export function VirtualUserList({
 }: Props) {
   const [columns, setColumns] = useState(1);
   const table = view === "table";
-  const rowHeight = table ? 88 : 196;
+  const rowHeight = table ? 55 : 196;
   const rowCount = Math.ceil(users.length / (table ? 1 : columns));
   const { viewportRef, onScroll, width, start, end, totalHeight } =
     useVirtualWindow(rowCount, rowHeight, table ? 44 : 0);
@@ -57,7 +57,7 @@ export function VirtualUserList({
   const headerClasses =
     "sticky top-0 z-10 h-11 border-b border-border bg-surface-soft px-[18px] text-left text-[10px] font-semibold text-muted";
   const cellClasses =
-    "h-[88px] overflow-hidden text-ellipsis whitespace-nowrap border-b border-border px-[18px] text-xs";
+    "overflow-hidden text-ellipsis whitespace-nowrap border-b border-border px-[18px] text-xs";
   return (
     <div
       className={`scrollbar-thin min-h-0 flex-1 overflow-auto overscroll-contain [overflow-anchor:none] ${table ? "rounded-xl border border-border bg-surface" : "pt-px pr-1 pl-px"}`}
@@ -104,7 +104,11 @@ export function VirtualUserList({
             {visibleRows.map((index) => {
               const user = users[index];
               return (
-                <tr key={user.id} aria-rowindex={index + 2}>
+                <tr
+                  key={user.id}
+                  aria-rowindex={index + 2}
+                  style={{ height: rowHeight }}
+                >
                   <td className={cellClasses}>
                     <div className="flex items-center gap-3">
                       <Avatar user={user} size="sm" />
@@ -146,10 +150,11 @@ export function VirtualUserList({
         >
           {visibleRows.map((index) => (
             <div
-              className="absolute inset-x-0 grid h-[196px] gap-4 pb-4"
+              className="absolute inset-x-0 grid gap-4 pb-4"
               key={index}
               style={{
                 top: index * rowHeight,
+                height: rowHeight,
                 gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
               }}
             >

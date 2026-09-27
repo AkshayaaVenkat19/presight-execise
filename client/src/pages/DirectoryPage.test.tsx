@@ -173,7 +173,9 @@ describe("directory interactions", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("searchbox")).toHaveValue("Alex");
     expect(screen.getByLabelText("Sort by")).toHaveValue("age");
-    expect(screen.getByLabelText("Sort direction")).toHaveValue("desc");
+    expect(
+      screen.getByRole("button", { name: "Sort descending" }),
+    ).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("url").textContent).toContain("/directory?");
     expect(screen.getByRole("button", { name: "Cards" })).toHaveAttribute(
       "aria-pressed",
@@ -336,9 +338,8 @@ describe("directory interactions", () => {
       .mock.calls.filter(([input]) =>
         String(input).startsWith("/api/filters"),
       ).length;
-    fireEvent.change(screen.getByLabelText("Sort by"), {
-      target: { value: "age" },
-    });
+    fireEvent.click(screen.getByLabelText("Sort by"));
+    fireEvent.click(screen.getByRole("option", { name: "Age" }));
     await waitFor(() => {
       const requests = vi
         .mocked(fetch)
@@ -365,9 +366,7 @@ describe("directory interactions", () => {
           String(input).startsWith("/api/filters"),
         ).length,
     ).toBe(facetRequests);
-    fireEvent.change(screen.getByLabelText("Sort direction"), {
-      target: { value: "desc" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Sort descending" }));
     await waitFor(() =>
       expect(
         vi
@@ -378,6 +377,27 @@ describe("directory interactions", () => {
       ).toBe(true),
     );
     expect(screen.getByTestId("url").textContent).toContain("sortOrder=desc");
+  });
+
+  it("uses the compact table row height for virtual scrolling", async () => {
+    renderApp("/directory?view=table");
+    const viewport = await screen.findByRole("region", {
+      name: "User directory, table view",
+    });
+    const table = screen.getByRole("table");
+    const rows = () =>
+      Array.from(
+        table.querySelectorAll<HTMLTableRowElement>("tr[aria-rowindex]"),
+      );
+    expect(rows()).toHaveLength(11);
+    expect(rows()[0]).toHaveStyle({ height: "55px" });
+    fireEvent.scroll(viewport, { target: { scrollTop: 550 } });
+    await waitFor(() =>
+      expect(rows()[0]).toHaveAttribute("aria-rowindex", "8"),
+    );
+    expect(table.querySelector("tbody > tr > td")).toHaveStyle({
+      height: "330px",
+    });
   });
 
   it("loads more table rows while keeping the rendered row count bounded", async () => {

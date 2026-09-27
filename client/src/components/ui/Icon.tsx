@@ -14,7 +14,9 @@ export type IconName =
   | "chevron-down"
   | "settings"
   | "sign-out"
-  | "filter";
+  | "filter"
+  | "sort-ascending"
+  | "sort-descending";
 const paths: Record<IconName, ReactNode> = {
   user: (
     <>
@@ -62,6 +64,8 @@ const paths: Record<IconName, ReactNode> = {
       <path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2" />
     </>
   ),
+  "sort-ascending": <path d="M5 20V4m-3 3 3-3 3 3M12 5h3M12 12h6M12 19h9" />,
+  "sort-descending": <path d="M5 4v16m-3-3 3 3 3-3M12 5h9M12 12h6M12 19h3" />,
   arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
   "chevron-down": <path d="m6 9 6 6 6-6" />,
   settings: (

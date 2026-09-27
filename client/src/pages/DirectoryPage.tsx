@@ -1,6 +1,6 @@
 import { useDirectoryState } from "../hooks/useDirectoryState";
 import { useDirectoryQueries } from "../hooks/useDirectoryQueries";
-import type { SortField, SortOrder } from "../types/directory";
+import type { SortField } from "../types/directory";
 import { Icon } from "../components/ui/Icon";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -38,8 +38,8 @@ export function DirectoryPage() {
     <>
       <section className="mb-[clamp(8px,2dvh,24px)] flex max-h-[20%] shrink-0 items-start justify-between gap-5 overflow-auto">
         <div>
-          <h1 className="mt-0 mb-2 text-[clamp(24px,3vw,40px)] leading-tight font-bold tracking-[-1.4px]">
-            Team Directory
+          <h1 className="mt-0 mb-2 text-3xl leading-tight font-bold tracking-[-1.4px]">
+            Users Directory
           </h1>
           <p className="text-xs leading-relaxed text-muted tablet:text-sm">
             Explore the directory. Uncover shared interests and endless
@@ -98,29 +98,40 @@ export function DirectoryPage() {
                   wrapperClassName="flex-1 tablet:max-w-40 tablet:flex-none"
                   id="sort-field"
                   value={state.sortBy}
-                  onChange={(event) =>
-                    update({ sortBy: event.target.value as SortField })
+                  onValueChange={(value) =>
+                    update({ sortBy: value as SortField })
+                  }
+                  options={[
+                    { value: "first_name", label: "First name" },
+                    { value: "last_name", label: "Last name" },
+                    { value: "age", label: "Age" },
+                    { value: "nationality", label: "Nationality" },
+                  ]}
+                />
+                <button
+                  type="button"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-[9px] border border-border bg-surface text-black/70 hover:border-accent hover:bg-accent-soft"
+                  aria-label="Sort descending"
+                  aria-pressed={state.sortOrder === "desc"}
+                  title={
+                    state.sortOrder === "asc"
+                      ? "Ascending — switch to descending"
+                      : "Descending — switch to ascending"
+                  }
+                  onClick={() =>
+                    update({
+                      sortOrder: state.sortOrder === "asc" ? "desc" : "asc",
+                    })
                   }
                 >
-                  <option value="first_name">First name</option>
-                  <option value="last_name">Last name</option>
-                  <option value="age">Age</option>
-                  <option value="nationality">Nationality</option>
-                </Select>
-                <label className="sr-only" htmlFor="sort-order">
-                  Sort direction
-                </label>
-                <Select
-                  wrapperClassName="flex-1 tablet:max-w-40 tablet:flex-none"
-                  id="sort-order"
-                  value={state.sortOrder}
-                  onChange={(event) =>
-                    update({ sortOrder: event.target.value as SortOrder })
-                  }
-                >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </Select>
+                  <Icon
+                    name={
+                      state.sortOrder === "asc"
+                        ? "sort-ascending"
+                        : "sort-descending"
+                    }
+                  />
+                </button>
               </div>
             </div>
             {(activeFilters.length > 0 || state.q) && (
