@@ -133,7 +133,7 @@ export function DirectoryPage() {
                 />
                 <button
                   type="button"
-                  className="flex size-11 shrink-0 items-center justify-center rounded-[9px] border border-border bg-surface text-black/70 hover:border-accent hover:bg-accent-soft"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-[9px] border border-border bg-surface text-text/70 hover:border-accent hover:bg-accent-soft"
                   aria-label="Sort descending"
                   aria-pressed={state.sortOrder === "desc"}
                   title={
