@@ -5,6 +5,7 @@ import logo from "../../assets/presightLogo.png";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../feedback/ToastProvider";
+import { Popover } from "../ui/Popover";
 
 export function AppLayout() {
   const { user, signOut } = useAuth();
@@ -32,7 +33,7 @@ export function AppLayout() {
       >
         Skip to content
       </a>
-      <header className="h-[68px] border-b border-border bg-surface tablet:h-20">
+      <header className="h-[40px] border-b border-border bg-surface tablet:h-15">
         <div className="mx-auto flex h-full max-w-[1440px] items-center gap-[18px] px-4 compact:gap-7 compact:px-5 tablet:gap-16 tablet:px-7 desktop:px-12">
           <Link
             className="inline-flex items-center gap-2.5 text-[22px] font-bold tracking-[-1px] tablet:text-[25px]"
@@ -47,7 +48,7 @@ export function AppLayout() {
           <nav className="h-full" aria-label="Main navigation">
             <NavLink
               className={({ isActive }) =>
-                `flex h-full items-center gap-[9px] border-b-[3px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-accent text-accent" : "border-transparent"}`
+                `flex h-full items-center gap-[9px] border-b-[3px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-brand-blue text-accent" : "border-transparent"}`
               }
               to="/directory"
             >
@@ -55,28 +56,32 @@ export function AppLayout() {
               Directory
             </NavLink>
           </nav>
-          <button
-            className="ml-auto flex items-center gap-2 rounded-[9px] bg-surface-soft px-[13px] py-2.5 text-[13px] hover:text-accent"
-            type="button"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === "light" ? "night" : "day"} theme`}
-            title={`Switch to ${theme === "light" ? "night" : "day"} theme`}
+          <Popover
+            label="Settings"
+            trigger={<Icon name="settings" />}
+            className="ml-auto"
+            triggerClassName="flex items-center justify-center rounded-lg p-1 text-muted hover:bg-surface-soft hover:text-accent tablet:p-2"
           >
-            <Icon name={theme === "light" ? "moon" : "sun"} />
-            <span className="hidden tablet:inline">
-              {theme === "light" ? "Dark" : "Light"}
-            </span>
-          </button>
-          {user && (
             <button
               type="button"
-              disabled={signingOut}
-              onClick={handleSignOut}
-              className="text-xs font-semibold text-muted hover:text-accent"
+              onClick={toggleTheme}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-surface-soft hover:text-accent"
             >
-              {signingOut ? "Signing out…" : "Sign out"}
+              <Icon name={theme === "light" ? "moon" : "sun"} />
+              Switch to {theme === "light" ? "dark" : "light"} theme
             </button>
-          )}
+            {user && (
+              <button
+                type="button"
+                disabled={signingOut}
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-danger enabled:hover:bg-danger-soft"
+              >
+                <Icon name="sign-out" />
+                {signingOut ? "Signing out…" : "Sign out"}
+              </button>
+            )}
+          </Popover>
         </div>
       </header>
       <main

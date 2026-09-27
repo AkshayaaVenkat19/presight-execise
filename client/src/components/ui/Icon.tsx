@@ -9,6 +9,8 @@ export type IconName =
   | "close"
   | "people"
   | "arrow"
+  | "settings"
+  | "sign-out"
   | "filter";
 const paths: Record<IconName, ReactNode> = {
   search: (
@@ -46,6 +48,17 @@ const paths: Record<IconName, ReactNode> = {
     </>
   ),
   arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
+  settings: (
+    <>
+      <path d="m9 3-.5 2-2 1.2-2-.6-2 3.4L4 10.5v3L2.5 15l2 3.4 2-.6 2 1.2.5 2h4l.5-2 2-1.2 2 .6 2-3.4-1.5-1.5v-3L20.5 9l-2-3.4-2 .6-2-1.2-.5-2Z" />
+      <circle cx="11.5" cy="12" r="3" />
+    </>
+  ),
+  "sign-out": (
+    <>
+      <path d="M9 4H4v16h5M10 12h11m-4-4 4 4-4 4" />
+    </>
+  ),
   filter: (
     <>
       <path d="M4 7h16M4 17h16" />

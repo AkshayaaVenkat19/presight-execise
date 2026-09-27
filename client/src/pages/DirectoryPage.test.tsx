@@ -396,8 +396,9 @@ describe("directory interactions", () => {
     renderApp("/missing");
     expect(screen.getByText("Page not found")).toBeInTheDocument();
     expect(document.documentElement.dataset.theme).toBe("dark");
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     fireEvent.click(
-      screen.getByRole("button", { name: "Switch to day theme" }),
+      screen.getByRole("button", { name: "Switch to light theme" }),
     );
     await act(async () => {});
     expect(document.documentElement.dataset.theme).toBe("light");

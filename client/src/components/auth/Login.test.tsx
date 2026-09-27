@@ -146,6 +146,7 @@ it("restores an existing session and signs out with a success toast", async () =
     }),
   );
   renderLogin("/directory");
+  fireEvent.click(await screen.findByRole("button", { name: "Settings" }));
   fireEvent.click(await screen.findByRole("button", { name: "Sign out" }));
   expect(
     await screen.findByRole("heading", { name: "Sign in" }),
