@@ -48,7 +48,7 @@ export function AppLayout() {
           <nav className="h-full" aria-label="Main navigation">
             <NavLink
               className={({ isActive }) =>
-                `flex h-full items-center gap-[9px] border-b-[3px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-brand-blue text-accent" : "border-transparent"}`
+                `flex h-full items-center gap-[9px] border-b-[5px] px-1 text-xs font-semibold compact:text-sm ${isActive ? "border-brand-blue text-accent" : "border-transparent"}`
               }
               to="/directory"
             >

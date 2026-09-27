@@ -85,7 +85,7 @@ export function DirectoryPage() {
                 Sort by
               </label>
               <Select
-                className="flex-1 tablet:max-w-40 tablet:flex-none"
+                wrapperClassName="flex-1 tablet:max-w-40 tablet:flex-none"
                 id="sort-field"
                 value={state.sortBy}
                 onChange={(event) =>
@@ -101,7 +101,7 @@ export function DirectoryPage() {
                 Sort direction
               </label>
               <Select
-                className="flex-1 tablet:max-w-40 tablet:flex-none"
+                wrapperClassName="flex-1 tablet:max-w-40 tablet:flex-none"
                 id="sort-order"
                 value={state.sortOrder}
                 onChange={(event) =>
