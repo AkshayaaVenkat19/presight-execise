@@ -413,6 +413,13 @@ describe("directory interactions", () => {
             url.pathname === endpoint && url.searchParams.get("q") === "Beth",
         ),
       ).toBe(true);
+    const results = screen.getByRole("region", {
+      name: "User directory, cards view",
+    });
+    expect(
+      within(results).getByRole("heading", { name: "Beth Person 002" }),
+    ).toBeInTheDocument();
+    expect(within(results).queryByText(/Alex/)).not.toBeInTheDocument();
   });
 
   it("virtualizes cards, loads the next page on scroll, and switches to a table", async () => {
@@ -456,6 +463,93 @@ describe("directory interactions", () => {
       await screen.findByRole("region", { name: "User directory, cards view" }),
     ).toBeInTheDocument();
   });
+
+  it.each([
+    {
+      change: "search",
+      param: "q",
+      value: "Beth",
+      firstUser: "Beth Person 002",
+    },
+    {
+      change: "nationality filter",
+      param: "nationality",
+      value: "Japan",
+      firstUser: "Beth Person 002",
+    },
+    {
+      change: "hobby filter",
+      param: "hobby",
+      value: "Reading",
+      firstUser: "Alex Person 001",
+    },
+  ])(
+    "resets to page 1 after changing $change and paginates the new results",
+    async ({ change, param, value, firstUser }) => {
+      renderApp();
+      const viewport = await screen.findByRole("region", {
+        name: "User directory, cards view",
+      });
+      await screen.findByRole("checkbox", { name: /Reading, 90/ });
+      fireEvent.scroll(viewport, { target: { scrollTop: 2400 } });
+      // Prove page 2 has rendered before changing the criteria.
+      expect(
+        await within(viewport).findByRole("heading", {
+          name: "Alex Person 031",
+        }),
+      ).toBeInTheDocument();
+      vi.mocked(fetch).mockClear();
+
+      if (change === "search") {
+        fireEvent.change(screen.getByRole("searchbox"), { target: { value } });
+      } else {
+        fireEvent.click(
+          screen.getByRole("checkbox", { name: new RegExp(`^${value},`) }),
+        );
+      }
+      await waitFor(() =>
+        expect(screen.queryByText("Updating…")).not.toBeInTheDocument(),
+      );
+      const resetViewport = screen.getByRole("region", {
+        name: "User directory, cards view",
+      });
+      expect(
+        await within(resetViewport).findByRole("heading", { name: firstUser }),
+      ).toBeInTheDocument();
+      expect(resetViewport.scrollTop).toBe(0);
+      expect(
+        within(resetViewport).queryByRole("heading", {
+          name: "Alex Person 031",
+        }),
+      ).not.toBeInTheDocument();
+      const userRequests = () =>
+        vi
+          .mocked(fetch)
+          .mock.calls.map(
+            ([input]) => new URL(String(input), "http://localhost"),
+          )
+          .filter((url) => url.pathname === "/api/users");
+      expect(userRequests()).toHaveLength(1);
+      expect(userRequests()[0].searchParams.get("page")).toBe("1");
+      expect(userRequests()[0].searchParams.get(param)).toBe(value);
+      expect(userRequests()[0].searchParams.get("limit")).toBe("30");
+
+      fireEvent.scroll(resetViewport, { target: { scrollTop: 2400 } });
+      const nextPageUser =
+        change === "hobby filter" ? "Alex Person 031" : "Beth Person 062";
+      expect(
+        await within(resetViewport).findByRole("heading", {
+          name: nextPageUser,
+        }),
+      ).toBeInTheDocument();
+      expect(userRequests().map((url) => url.searchParams.get("page"))).toEqual(
+        ["1", "2"],
+      );
+      expect(
+        userRequests().every((url) => url.searchParams.get(param) === value),
+      ).toBe(true);
+    },
+  );
 
   it("restarts pagination after sorting without refreshing unchanged facets", async () => {
     renderApp();

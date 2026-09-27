@@ -9,9 +9,11 @@ import { filterParams } from "../utils/directoryState";
 import { useDebouncedValue } from "./useDebouncedValue";
 
 export function useDirectoryQueries(state: DirectoryState) {
-  const debouncedText = useDebouncedValue(state.q);
-  const waitingForSearch = debouncedText !== state.q;
   const filters = filterParams(state);
+  // Debounce the API value so whitespace-only edits do not restart a search.
+  const searchText = filters.get("q") ?? "";
+  const debouncedText = useDebouncedValue(searchText);
+  const waitingForSearch = debouncedText !== searchText;
   const filterKey = filters.toString();
   const userParams = new URLSearchParams(filters);
   userParams.set("sortBy", state.sortBy);
