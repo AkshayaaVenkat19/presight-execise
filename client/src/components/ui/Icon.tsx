@@ -2,6 +2,8 @@ import type { ReactNode, SVGProps } from "react";
 
 export type IconName =
   | "search"
+  | "user"
+  | "lock"
   | "grid"
   | "table"
   | "sun"
@@ -14,6 +16,18 @@ export type IconName =
   | "sign-out"
   | "filter";
 const paths: Record<IconName, ReactNode> = {
+  user: (
+    <>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 21v-2a7 7 0 0 1 14 0v2Z" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="5" y="10" width="14" height="11" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2" />
+    </>
+  ),
   search: (
     <>
       <circle cx="10.5" cy="10.5" r="6.5" />

@@ -1,13 +1,16 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useMatch } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { Icon } from "../ui/Icon";
 import logo from "../../assets/presightLogo.png";
+import lightBackground from "../../assets/light-bg.avif";
+import darkBackground from "../../assets/dark-bg.avif";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../feedback/ToastProvider";
 import { Popover } from "../ui/Popover";
 
 export function AppLayout() {
+  const isLoginPage = useMatch("/login");
   const { user, signOut } = useAuth();
   const notify = useToast();
   const [signingOut, setSigningOut] = useState(false);
@@ -26,7 +29,16 @@ export function AppLayout() {
   }
   const { theme, toggleTheme } = useTheme();
   return (
-    <>
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={
+        isLoginPage
+          ? {
+              backgroundImage: `url(${theme === "dark" ? darkBackground : lightBackground})`,
+            }
+          : undefined
+      }
+    >
       <a
         className="fixed -top-20 left-4 z-10 rounded-lg border border-accent bg-surface px-5 py-3 focus:top-3"
         href="#main-content"
@@ -86,10 +98,14 @@ export function AppLayout() {
       </header>
       <main
         id="main-content"
-        className="mx-auto min-h-[calc(100vh-144px)] max-w-[1440px] px-4 py-[26px] compact:px-5 compact:py-7 tablet:px-7 tablet:py-[34px] desktop:px-12 desktop:pt-[46px] desktop:pb-9"
+        className={
+          isLoginPage
+            ? "mx-auto flex min-h-[calc(100svh-40px)] max-w-[1440px] items-center px-4 py-10 compact:px-5 tablet:min-h-[calc(100svh-60px)] tablet:px-12 desktop:px-24"
+            : "mx-auto min-h-[calc(100vh-144px)] max-w-[1440px] px-4 py-[26px] compact:px-5 compact:py-7 tablet:px-7 tablet:py-[34px] desktop:px-12 desktop:pt-[46px] desktop:pb-9"
+        }
       >
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }
