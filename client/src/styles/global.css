@@ -11,6 +11,13 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-support: var(--support);
+  --color-support-soft: var(--support-soft);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-green: var(--brand-green);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --shadow-panel: var(--shadow);
@@ -37,35 +44,51 @@
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    --background: #f5f7fa;
+    /* Colors derived from logo*/
+    --brand-blue: #007bff;
+    --brand-cyan: #00a3ff;
+    --brand-teal: #00a28b;
+    --brand-green: #007646;
+    --background: #f4f8fc;
     --surface: #ffffff;
-    --surface-soft: #f1f5f7;
-    --text: #172b3a;
-    --muted: #627383;
-    --border: #dfe6ec;
-    --accent: #087d78;
-    --accent-hover: #066561;
-    --accent-soft: #e6f4f1;
+    --surface-soft: #edf4fa;
+    --text: #132b43;
+    --muted: #536b80;
+    --border: #d6e3ee;
+    --accent: color-mix(in srgb, var(--brand-blue) 72%, #0700c4);
+    --accent-hover: color-mix(in srgb, var(--accent) 82%, #132b43);
+    --accent-soft: color-mix(in srgb, var(--brand-blue) 9%, var(--surface));
+    --on-accent: #ffffff;
+    --support: var(--brand-green);
+    --support-soft: color-mix(in srgb, var(--brand-teal) 10%, var(--surface));
     --danger: #b54141;
     --danger-soft: #fff1f1;
-    --shadow: 0 3px 14px rgb(23 43 58 / 3%);
+    --shadow: 0 3px 14px rgb(19 43 67 / 5%);
     color-scheme: light;
   }
 
   :root[data-theme="dark"] {
-    --background: #0e1720;
-    --surface: #16222e;
-    --surface-soft: #1c2c39;
-    --text: #e6eef5;
-    --muted: #a2b4c3;
-    --border: #2a3b49;
-    --accent: #6bd7c7;
-    --accent-hover: #99e4d8;
-    --accent-soft: #173c3a;
+    --background: #0b1624;
+    --surface: #122338;
+    --surface-soft: #192e46;
+    --text: #e8f2fb;
+    --muted: #a5bbcf;
+    --border: #30475f;
+    --accent: color-mix(in srgb, var(--brand-cyan) 48%, #ffffff);
+    --accent-hover: color-mix(in srgb, var(--brand-cyan) 30%, #ffffff);
+    --accent-soft: color-mix(in srgb, var(--brand-blue) 20%, var(--surface));
+    --on-accent: #0b1624;
+    --support: color-mix(in srgb, var(--brand-teal) 48%, #ffffff);
+    --support-soft: color-mix(in srgb, var(--brand-teal) 18%, var(--surface));
     --danger: #ffacac;
     --danger-soft: #3d252c;
-    --shadow: 0 3px 14px rgb(0 0 0 / 8%);
+    --shadow: 0 3px 14px rgb(0 0 0 / 16%);
     color-scheme: dark;
+  }
+
+  ::selection {
+    color: var(--on-accent);
+    background: var(--accent);
   }
 
   body {

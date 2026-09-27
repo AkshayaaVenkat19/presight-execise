@@ -4,10 +4,12 @@ export interface InputProps extends ComponentPropsWithRef<"input"> {}
 
 export function Input({ type = "text", className = "", ...props }: InputProps) {
   const styles = {
-    default: "rounded-lg border border-border bg-background px-3 py-3",
+    default:
+      "rounded-lg border border-border bg-background px-3 py-3 text-text placeholder:text-muted focus:border-accent",
     search:
       "h-11 w-full min-w-0 border-0 bg-transparent text-xs text-text outline-none placeholder:text-muted",
-    checkbox: "m-0 size-[15px] shrink-0 cursor-pointer accent-accent",
+    checkbox:
+      "m-0 size-[15px] shrink-0 cursor-pointer accent-accent disabled:cursor-not-allowed",
   };
   const classes =
     type === "checkbox"

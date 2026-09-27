@@ -11,7 +11,7 @@ export function Avatar({
   const [failed, setFailed] = useState(false);
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-soft font-semibold text-accent ${size === "sm" ? "size-[38px] text-xs" : "size-[52px] text-base"}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-support-soft font-semibold text-support ${size === "sm" ? "size-[38px] text-xs" : "size-[52px] text-base"}`}
       aria-hidden="true"
     >
       {!failed && user.avatar ? (

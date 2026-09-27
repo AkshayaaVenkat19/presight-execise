@@ -14,7 +14,7 @@ export function HobbyTags({
       ) : (
         hobbies.slice(0, 2).map((hobby) => (
           <span
-            className="inline-block min-w-0 max-w-[140px] shrink truncate rounded-md border border-border bg-surface-soft px-2 py-[5px] text-[10px] text-muted"
+            className="inline-block min-w-0 max-w-[140px] shrink truncate rounded-md border border-support/20 bg-support-soft px-2 py-[5px] text-[10px] text-support"
             key={hobby}
             title={hobby}
           >

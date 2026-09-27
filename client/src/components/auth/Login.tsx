@@ -41,7 +41,7 @@ export function Login() {
 
   return (
     <section
-      className="mx-auto mt-8 max-w-md rounded-2xl border border-border bg-surface p-6 shadow-panel tablet:p-8"
+      className="mx-auto mt-8 max-w-md rounded-2xl border border-border border-t-4 border-t-accent bg-surface p-6 shadow-panel tablet:p-8"
       aria-labelledby="login-title"
     >
       <h1 id="login-title" className="text-2xl font-bold">

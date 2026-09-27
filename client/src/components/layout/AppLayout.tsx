@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { Icon } from "../ui/Icon";
-import logo from '../../assets/presightLogo.png'
+import logo from "../../assets/presightLogo.png";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../feedback/ToastProvider";
@@ -12,9 +12,16 @@ export function AppLayout() {
   const [signingOut, setSigningOut] = useState(false);
   async function handleSignOut() {
     setSigningOut(true);
-    try { await signOut(); }
-    catch (error) { notify(error instanceof Error ? error.message : "Unable to sign out", "error"); }
-    finally { setSigningOut(false); }
+    try {
+      await signOut();
+    } catch (error) {
+      notify(
+        error instanceof Error ? error.message : "Unable to sign out",
+        "error",
+      );
+    } finally {
+      setSigningOut(false);
+    }
   }
   const { theme, toggleTheme } = useTheme();
   return (
@@ -32,12 +39,10 @@ export function AppLayout() {
             to="/directory"
             aria-label="Presight home"
           >
-            <span className="grid size-[34px] place-items-center rounded-[10px] text-surface">
+            <span className="grid size-[34px] place-items-center rounded-[10px]">
               <img src={logo} alt="home-icon" />
             </span>
-            <span>
-              Presight
-            </span>
+            <span className="text-accent">Presight</span>
           </Link>
           <nav className="h-full" aria-label="Main navigation">
             <NavLink
@@ -62,10 +67,16 @@ export function AppLayout() {
               {theme === "light" ? "Dark" : "Light"}
             </span>
           </button>
-          {user && <button type="button" disabled={signingOut} onClick={handleSignOut}
-            className="text-xs font-semibold text-muted hover:text-accent">
-            {signingOut ? "Signing out…" : "Sign out"}
-          </button>}
+          {user && (
+            <button
+              type="button"
+              disabled={signingOut}
+              onClick={handleSignOut}
+              className="text-xs font-semibold text-muted hover:text-accent"
+            >
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          )}
         </div>
       </header>
       <main

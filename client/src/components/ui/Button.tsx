@@ -14,7 +14,8 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const variants = {
-    primary: "border-transparent bg-accent text-surface hover:bg-accent-hover",
+    primary:
+      "border-transparent bg-accent text-on-accent hover:bg-accent-hover",
     secondary: "border-border bg-surface text-text hover:bg-surface-soft",
     danger: "border-transparent bg-danger-soft text-danger",
   };
