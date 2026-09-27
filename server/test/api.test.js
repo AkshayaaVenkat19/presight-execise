@@ -11,6 +11,7 @@ const HealthRepository = require('../src/repositories/health.repository');
 let server;
 let baseUrl;
 let db;
+let sessionCookie;
 
 before(async () => {
   await runMigrations();
@@ -30,6 +31,12 @@ before(async () => {
     server.once('error', reject);
   });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'admin', password: 'admin' }),
+  });
+  assert.equal(login.status, 200);
+  sessionCookie = login.headers.get('set-cookie').split(';')[0];
 });
 
 after(async () => {
@@ -38,7 +45,7 @@ after(async () => {
 });
 
 async function request(path, options) {
-  const response = await fetch(`${baseUrl}${path}`, options);
+  const response = await fetch(`${baseUrl}${path}`, { ...options, headers: { Cookie: sessionCookie, ...options?.headers } });
   return { status: response.status, headers: response.headers, body: await response.json() };
 }
 
@@ -160,4 +167,59 @@ test('unexpected failures return a generic 500 and log the original error', asyn
   assert.equal(logger.mock.callCount(), 1);
   assert.match(logger.mock.calls[0].arguments[0], /GET \/api\/users -> INTERNAL_ERROR/);
   assert.equal(logger.mock.calls[0].arguments[1], originalError);
+});
+
+const loginOptions = (body) => ({
+  method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: '' },
+  body: JSON.stringify(body),
+});
+
+test('default admin is hashed and migrations preserve existing credentials', async () => {
+  const original = await db.get("SELECT * FROM accounts WHERE username = 'admin'");
+  assert.notEqual(original.password_hash, 'admin');
+  await runMigrations();
+  assert.deepEqual(await db.get("SELECT * FROM accounts WHERE username = 'admin'"), original);
+});
+
+test('login validates input and rejects incorrect credentials without account disclosure', async () => {
+  for (const body of [{}, { username: [], password: 'admin' }, { username: 'admin', password: '' }]) {
+    assert.equal((await request('/api/auth/login', loginOptions(body))).status, 400);
+  }
+  for (const username of ['admin', 'missing']) {
+    const result = await request('/api/auth/login', loginOptions({ username, password: 'wrong' }));
+    assert.equal(result.status, 401);
+    assert.equal(result.body.error.message, 'Invalid username or password');
+    assert.equal(result.headers.get('set-cookie'), null);
+  }
+});
+
+test('directory endpoints require a valid session, while health stays public', async () => {
+  for (const path of ['/users', '/filters', '/hobbies', '/nationalities']) {
+    assert.equal((await request(`/api${path}`, { headers: { Cookie: '' } })).status, 401);
+  }
+  assert.equal((await request('/api/health', { headers: { Cookie: '' } })).status, 200);
+  assert.equal((await request('/api/auth/me', { headers: { Cookie: 'presight_session=bad' } })).status, 401);
+});
+
+test('login issues an HTTP-only session, me restores it, and logout revokes it', async () => {
+  const result = await request('/api/auth/login', loginOptions({ username: 'admin', password: 'admin' }));
+  assert.equal(result.status, 200);
+  assert.deepEqual(Object.keys(result.body.data).sort(), ['id', 'username']);
+  const cookie = result.headers.get('set-cookie');
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Strict/);
+  const headers = { Cookie: cookie.split(';')[0], 'Content-Type': 'application/json' };
+  assert.equal((await request('/api/auth/me', { headers })).body.data.username, 'admin');
+  assert.equal((await request('/api/auth/logout', { method: 'POST', headers, body: '{}' })).status, 200);
+  assert.equal((await request('/api/auth/me', { headers })).status, 401);
+});
+
+test('expired sessions are rejected and auth writes require JSON', async () => {
+  const result = await request('/api/auth/login', loginOptions({ username: 'admin', password: 'admin' }));
+  const cookie = result.headers.get('set-cookie').split(';')[0];
+  const { createHash } = require('node:crypto');
+  const hash = createHash('sha256').update(cookie.split('=')[1]).digest('hex');
+  await db.run('UPDATE sessions SET expires_at = 0 WHERE token_hash = ?', hash);
+  assert.equal((await request('/api/auth/me', { headers: { Cookie: cookie } })).status, 401);
+  assert.equal((await request('/api/auth/logout', { method: 'POST' })).status, 415);
 });

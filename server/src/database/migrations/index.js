@@ -1,4 +1,5 @@
 const { getDbConnection } = require('../connection');
+const { hashPassword } = require('../../utils/password');
 
 /**
  * Initializes the SQLite database schema with optimal tables, constraints, and indexes.
@@ -8,6 +9,18 @@ async function runMigrations() {
   const db = await getDbConnection();
 
   await db.exec(`
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      expires_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
+
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       avatar TEXT NOT NULL,
@@ -45,6 +58,11 @@ async function runMigrations() {
       ON users(first_name COLLATE NOCASE, last_name COLLATE NOCASE, id);
   `);
 
+  // Idempotent: existing credentials and sessions survive migrations and reseeding.
+  if (!await db.get('SELECT id FROM accounts WHERE username = ?', 'admin')) {
+    await db.run('INSERT OR IGNORE INTO accounts (username, password_hash) VALUES (?, ?)',
+      'admin', await hashPassword('admin'));
+  }
   console.log('Database migrations completed successfully.');
 }
 

@@ -6,7 +6,10 @@ const { validateQuery } = require('../middleware/validation.middleware');
 const { filterQuerySchema, userListQuerySchema } = require('../validation/user.validation');
 const { methodNotAllowed } = require('../middleware/method.middleware');
 
+const { requireAuth } = require('../middleware/auth.middleware');
 const router = express.Router();
+router.use('/auth', require('./auth.routes'));
+router.use(['/users', '/filters', '/hobbies', '/nationalities'], requireAuth);
 
 const validateFilters = validateQuery(filterQuerySchema);
 

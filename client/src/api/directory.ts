@@ -1,35 +1,14 @@
 import type { Facets, UserPage } from "../types/directory";
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
+import { requestJson } from "./http";
+export { ApiError } from "./http";
 
-async function getJson<T>(
+function getJson<T>(
   path: string,
   params: URLSearchParams,
   signal: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(`/api/${path}?${params}`, {
-    signal,
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) {
-    let message = "The directory is unavailable. Please try again.";
-    try {
-      const body = await response.json();
-      if (typeof body.error?.message === "string") message = body.error.message;
-    } catch {
-      // Reverse proxies can return non-JSON errors; keep a useful fallback.
-    }
-    throw new ApiError(message, response.status);
-  }
-  return response.json() as Promise<T>;
+  return requestJson<T>(`${path}?${params}`, { signal });
 }
 
 export function getUsers(

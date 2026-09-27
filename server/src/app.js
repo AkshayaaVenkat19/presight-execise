@@ -6,7 +6,7 @@ const { notFoundHandler, errorHandler } = require('./middleware/error.middleware
 
 const app = express();
 app.disable('x-powered-by');
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use('/health', healthRoutes);
 app.use('/api', routes);

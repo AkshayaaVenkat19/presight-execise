@@ -31,6 +31,8 @@ function json(body: unknown, status = 200) {
 
 function apiResponse(input: RequestInfo | URL) {
   const url = new URL(String(input), "http://localhost");
+  if (url.pathname === "/api/auth/me")
+    return json({ data: { id: 1, username: "admin" } });
   const q = url.searchParams.get("q")?.toLowerCase() ?? "";
   const nationalities = url.searchParams.getAll("nationality");
   const hobbies = url.searchParams.getAll("hobby");
@@ -343,8 +345,10 @@ describe("directory interactions", () => {
   });
 
   it("handles API errors with a retry that recovers the list and facets", async () => {
-    vi.mocked(fetch).mockImplementation(async () =>
-      json({ error: { message: "Database query failed" } }, 500),
+    vi.mocked(fetch).mockImplementation(async (input) =>
+      String(input) === "/api/auth/me"
+        ? apiResponse(input)
+        : json({ error: { message: "Database query failed" } }, 500),
     );
     renderApp();
     expect(
