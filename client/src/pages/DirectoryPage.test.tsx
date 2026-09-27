@@ -442,6 +442,41 @@ describe("directory interactions", () => {
     ).toBeInTheDocument();
   });
 
+  it.each(["", "?q=Nobody"])(
+    "shows refresh errors while retaining cached results and filters (%s)",
+    async (search) => {
+      const { client } = renderApp(`/directory${search}`);
+      if (search) await screen.findByText("No people found");
+      else
+        await screen.findByRole("region", {
+          name: "User directory, cards view",
+        });
+      await waitFor(() => expect(client.isFetching()).toBe(0));
+      vi.mocked(fetch).mockImplementation(async () =>
+        json({ error: { message: "Temporary failure" } }, 500),
+      );
+      await act(async () => {
+        await client.invalidateQueries({
+          predicate: (query) => query.queryKey[0] !== "session",
+        });
+      });
+      expect(
+        await screen.findByText(/Could not refresh the directory/),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByText(/Showing previously loaded counts/),
+      ).toBeInTheDocument();
+      if (search)
+        expect(screen.getByText("No people found")).toBeInTheDocument();
+      else {
+        expect(screen.getAllByRole("article").length).toBeGreaterThan(0);
+        expect(
+          screen.getByRole("checkbox", { name: /Canada/ }),
+        ).toBeInTheDocument();
+      }
+    },
+  );
+
   it("retains existing users when loading another page fails and supports retry", async () => {
     vi.mocked(fetch).mockImplementation(async (input) =>
       String(input).includes("page=2")

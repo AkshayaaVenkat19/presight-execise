@@ -208,6 +208,24 @@ export function DirectoryPage() {
             </div>
           </div>
           <div className="scrollbar-thin min-h-0 flex-1 overflow-auto">
+            {users.isRefetchError && (
+              <div
+                className="shrink-0 mb-3 rounded-lg bg-danger-soft p-3 text-xs text-danger"
+                role="alert"
+              >
+                Could not refresh the directory. Showing previously loaded
+                results.{" "}
+                <button
+                  className={textButtonClasses}
+                  type="button"
+                  onClick={() => {
+                    void users.refetch();
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             {loading ? (
               <DirectorySkeleton table={state.view === "table"} />
             ) : users.isError && !users.data ? (
@@ -236,24 +254,6 @@ export function DirectoryPage() {
               </StatusPanel>
             ) : (
               <div className="flex h-full min-h-0 flex-col">
-                {users.isRefetchError && (
-                  <div
-                    className="shrink-0 mb-3 rounded-lg bg-danger-soft p-3 text-xs text-danger"
-                    role="alert"
-                  >
-                    Could not refresh the directory. Showing previously loaded
-                    results.{" "}
-                    <button
-                      className={textButtonClasses}
-                      type="button"
-                      onClick={() => {
-                        void users.refetch();
-                      }}
-                    >
-                      Retry
-                    </button>
-                  </div>
-                )}
                 <VirtualUserList
                   key={`${userKey}:${state.view}`}
                   users={people}
@@ -264,7 +264,8 @@ export function DirectoryPage() {
                   fetchingNext={users.isFetchingNextPage}
                   nextError={users.isFetchNextPageError ? users.error : null}
                   loadMore={() => {
-                    if (!updating) void users.fetchNextPage();
+                    if (!updating && users.hasNextPage)
+                      void users.fetchNextPage({ cancelRefetch: false });
                   }}
                 />
               </div>

@@ -9,8 +9,8 @@ export interface Credentials {
   password: string;
 }
 
-export async function getSession() {
-  return (await requestJson<{ data: AuthUser }>("auth/me")).data;
+export async function getSession(signal: AbortSignal) {
+  return (await requestJson<{ data: AuthUser }>("auth/me", { signal })).data;
 }
 
 export async function login(credentials: Credentials) {

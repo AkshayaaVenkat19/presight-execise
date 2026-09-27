@@ -66,18 +66,23 @@ export function FilterSidebar({
         <p className="mb-2 shrink-0 text-[11px] tablet:mb-5 leading-[1.7] text-muted">
           Counts reflect the current results.
         </p>
-        {error && !loading ? (
+        {error && !loading && (
           <div
             className="scrollbar-thin min-h-0 overflow-y-auto text-xs leading-relaxed text-muted [&>p]:mb-3"
             role="alert"
           >
-            <p>Could not load filter counts</p>
+            <p>
+              {facets
+                ? "Could not refresh filter counts. Showing previously loaded counts."
+                : "Could not load filter counts"}
+            </p>
             <p>{error.message}</p>
             <Button variant="secondary" size="sm" onClick={retry}>
               Retry filters
             </Button>
           </div>
-        ) : (
+        )}
+        {(!error || facets) && (
           <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)] gap-3 tablet:content-start tablet:grid-cols-1 tablet:grid-rows-[repeat(2,minmax(0,max-content))] tablet:gap-6">
             <FilterGroup
               title="Nationalities"

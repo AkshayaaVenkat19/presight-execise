@@ -3,14 +3,10 @@ import {
   useInfiniteQuery,
   useQuery,
 } from "@tanstack/react-query";
-import { ApiError, getFacets, getUsers } from "../api/directory";
+import { getFacets, getUsers } from "../api/directory";
 import type { DirectoryState } from "../types/directory";
 import { filterParams } from "../utils/directoryState";
 import { useDebouncedValue } from "./useDebouncedValue";
-
-function retry(failureCount: number, error: Error): boolean {
-  return !(error instanceof ApiError && error.status < 500) && failureCount < 1;
-}
 
 export function useDirectoryQueries(state: DirectoryState) {
   const debouncedText = useDebouncedValue(state.q);
@@ -31,7 +27,6 @@ export function useDirectoryQueries(state: DirectoryState) {
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
     placeholderData: keepPreviousData,
     enabled: !waitingForSearch,
-    retry,
   });
 
   const facets = useQuery({
@@ -39,7 +34,6 @@ export function useDirectoryQueries(state: DirectoryState) {
     queryFn: ({ signal }) => getFacets(new URLSearchParams(filterKey), signal),
     placeholderData: keepPreviousData,
     enabled: !waitingForSearch,
-    retry,
   });
 
   return { users, facets, waitingForSearch, userKey };

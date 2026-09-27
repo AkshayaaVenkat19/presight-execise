@@ -28,8 +28,8 @@ export async function requestJson<T>(
     try {
       const body = await response.json();
       if (typeof body.error?.message === "string") message = body.error.message;
-    } catch(e){
-      console.error(e,'Error in request JSON')
+    } catch (error) {
+      if (options.signal?.aborted) throw error;
     }
     if (response.status === 401 && !path.startsWith("auth/")) {
       window.dispatchEvent(new Event("session-expired"));

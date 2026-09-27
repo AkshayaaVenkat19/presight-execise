@@ -1,12 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as auth from "../api/auth";
 import { ApiError } from "../api/http";
 import { useToast } from "../components/feedback/ToastProvider";
@@ -27,37 +20,44 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<auth.AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const client = useQueryClient();
   const notify = useToast();
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setUser(await auth.getSession());
-    } catch (error) {
-      setUser(null);
-      if (!(error instanceof ApiError && error.status === 401)) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unable to check your session";
-        setError(message);
-        notify(message, "error");
+  const session = useQuery({
+    queryKey: ["session"],
+    queryFn: async ({ signal }) => {
+      try {
+        return await auth.getSession(signal);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) return null;
+        throw error;
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [notify]);
+    },
+  });
+  const user = session.data ?? null;
+  const loading = session.isPending;
+  const error = session.error?.message ?? null;
+
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    if (error) notify(error, "error");
+  }, [error, notify]);
+  useEffect(() => {
+    if (session.data === null) {
+      client.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "session",
+      });
+    }
+  }, [client, session.data]);
+
+  async function refresh() {
+    await session.refetch({ cancelRefetch: false });
+  }
   useEffect(() => {
     const expire = () => {
-      setUser(null);
-      client.clear();
+      void client.cancelQueries();
+      client.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "session",
+      });
+      client.setQueryData(["session"], null);
       notify("Your session expired. Please sign in again.", "error");
     };
     window.addEventListener("session-expired", expire);
@@ -66,15 +66,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(credentials: auth.Credentials) {
     const user = await auth.login(credentials);
-    client.clear();
-    setError(null);
-    setUser(user);
+    await client.cancelQueries();
+    client.removeQueries({
+      predicate: (query) => query.queryKey[0] !== "session",
+    });
+    client.setQueryData(["session"], user);
     notify("Signed in successfully", "success");
   }
   async function signOut() {
     await auth.logout();
-    setUser(null);
-    client.clear();
+    await client.cancelQueries();
+    client.removeQueries({
+      predicate: (query) => query.queryKey[0] !== "session",
+    });
+    client.setQueryData(["session"], null);
     notify("Signed out successfully", "success");
   }
   return (
