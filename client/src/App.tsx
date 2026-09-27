@@ -5,6 +5,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 
 import { AuthProvider } from "./hooks/useAuth";
 import { ToastProvider } from "./components/feedback/ToastProvider";
+import { ErrorBoundary } from "./components/feedback/ErrorBoundary";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import { Login } from "./components/auth/Login";
 
@@ -15,19 +16,21 @@ function DirectoryRedirect() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<DirectoryRedirect />} />
-            <Route path="login" element={<Login />} />
-            <Route element={<RequireAuth />}>
-              <Route path="directory" element={<DirectoryPage />} />
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route index element={<DirectoryRedirect />} />
+              <Route path="login" element={<Login />} />
+              <Route element={<RequireAuth />}>
+                <Route path="directory" element={<DirectoryPage />} />
+              </Route>
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </ToastProvider>
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
