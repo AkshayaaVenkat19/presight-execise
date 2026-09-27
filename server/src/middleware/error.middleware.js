@@ -1,4 +1,5 @@
 const { AppError, DatabaseError, InternalError, NotFoundError } = require('../errors/custom.error');
+const { logger, sanitizeUrl, serializeError } = require('../utils/logger');
 
 function notFoundHandler(req, _res, next) {
   next(new NotFoundError(`Route ${req.method} ${req.path} does not exist`));
@@ -26,7 +27,15 @@ function errorHandler(error, req, res, next) {
   const timestamp = new Date().toISOString();
 
   if (statusCode >= 500) {
-    console.error(`[${timestamp}] ${req.method} ${req.originalUrl} -> ${code}`, error);
+    const isDatabaseFailure = code === 'DATABASE_ERROR';
+    logger.error(isDatabaseFailure ? 'database.error' : 'server.error', {
+      requestId: req.id,
+      method: req.method,
+      endpoint: sanitizeUrl(req.originalUrl),
+      statusCode,
+      code,
+      ...serializeError(error),
+    });
   }
 
   const body = { code, message };

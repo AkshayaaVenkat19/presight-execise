@@ -203,11 +203,13 @@ test('SQLite failures return a generic 500 and log the original error', async (t
   assert.equal(JSON.stringify(result.body).includes('missing_error_test_table'), false);
   assert.equal(result.body.error.stack, undefined);
   assert.equal(result.body.error.details, undefined);
-  assert.equal(logger.mock.callCount(), 1);
-  const [context, originalError] = logger.mock.calls[0].arguments;
-  assert.match(context, /GET \/api\/users -> DATABASE_ERROR/);
-  assert.equal(originalError.code, 'SQLITE_ERROR');
-  assert.match(originalError.message, /missing_error_test_table/);
+  const entries = logger.mock.calls.map((call) => JSON.parse(call.arguments[0]));
+  const failure = entries.find((entry) => entry.message === 'database.error');
+  assert.equal(failure.method, 'GET');
+  assert.equal(failure.endpoint, '/api/users');
+  assert.equal(failure.code, 'DATABASE_ERROR');
+  assert.equal(failure.error.code, 'SQLITE_ERROR');
+  assert.match(failure.error.message, /missing_error_test_table/);
 });
 
 test('unexpected failures return a generic 500 and log the original error', async (t) => {
@@ -222,9 +224,40 @@ test('unexpected failures return a generic 500 and log the original error', asyn
   assert.equal(JSON.stringify(result.body).includes(originalError.message), false);
   assert.equal(result.body.error.stack, undefined);
   assert.equal(result.body.error.details, undefined);
-  assert.equal(logger.mock.callCount(), 1);
-  assert.match(logger.mock.calls[0].arguments[0], /GET \/api\/users -> INTERNAL_ERROR/);
-  assert.equal(logger.mock.calls[0].arguments[1], originalError);
+  const entries = logger.mock.calls.map((call) => JSON.parse(call.arguments[0]));
+  const failure = entries.find((entry) => entry.message === 'server.error');
+  assert.equal(failure.method, 'GET');
+  assert.equal(failure.endpoint, '/api/users');
+  assert.equal(failure.code, 'INTERNAL_ERROR');
+  assert.equal(failure.error.message, originalError.message);
+});
+
+test('completed requests are logged without credentials or query values', async (t) => {
+  const logger = t.mock.method(console, 'log', () => {});
+  const result = await request('/api/users?search=Alex&token=super-secret');
+
+  assert.equal(result.status, 200);
+  const entry = logger.mock.calls
+    .map((call) => JSON.parse(call.arguments[0]))
+    .find((line) => line.message === 'request.completed');
+  assert.equal(entry.method, 'GET');
+  assert.equal(entry.endpoint, '/api/users?search=Alex&token=[REDACTED]');
+  assert.equal(entry.statusCode, 200);
+  assert.ok(Number.isFinite(entry.responseTimeMs));
+  assert.ok(Number.isFinite(Date.parse(entry.timestamp)));
+  assert.equal(JSON.stringify(entry).includes('super-secret'), false);
+});
+
+test('login requests never log credentials', async (t) => {
+  const logged = [];
+  t.mock.method(console, 'log', (line) => logged.push(line));
+  t.mock.method(console, 'warn', (line) => logged.push(line));
+  const result = await request('/api/auth/login', loginOptions({ username: 'admin', password: 'admin' }));
+
+  assert.equal(result.status, 200);
+  const output = logged.join('\n');
+  assert.equal(output.includes('password'), false);
+  assert.ok(output.includes('/api/auth/login'));
 });
 
 const loginOptions = (body) => ({

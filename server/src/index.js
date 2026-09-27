@@ -2,15 +2,16 @@ require('dotenv').config();
 const app = require('./app');
 const UserService = require('./services/user.service');
 const { seedDatabase } = require('./database/seeds');
+const { logger, serializeError } = require('./utils/logger');
 const PORT = process.env.PORT || 3001;
 
 async function start() {
   await seedDatabase(1000, { onlyIfEmpty: true });
   await UserService.loadFilterVocabulary();
-  app.listen(PORT, () => console.log(`[server] listening on http://localhost:${PORT}`));
+  app.listen(PORT, () => logger.info('server.listening', { port: Number(PORT) }));
 }
 
 start().catch((error) => {
-  console.error('[server] startup failed', error);
+  logger.error('server.startup_failed', serializeError(error));
   process.exitCode = 1;
 });
