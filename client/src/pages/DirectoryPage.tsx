@@ -3,6 +3,8 @@ import { useDirectoryQueries } from "../hooks/useDirectoryQueries";
 import type { SortField, SortOrder } from "../types/directory";
 import { Icon } from "../components/ui/Icon";
 import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
 import { ViewToggle } from "../components/ui/ViewToggle";
 import { FilterSidebar } from "../components/directory/FilterSidebar";
 import { VirtualUserList } from "../components/directory/VirtualUserList";
@@ -23,8 +25,6 @@ export function DirectoryPage() {
     })),
     ...state.hobbies.map((value) => ({ kind: "hobbies" as const, value })),
   ];
-  const selectClasses =
-    "min-h-11 flex-1 rounded-[9px] border border-border bg-surface px-2.5 py-2 text-[11px] text-text tablet:max-w-40 tablet:flex-none";
   const chipClasses =
     "inline-flex max-w-full items-center gap-[7px] rounded-[7px] bg-accent-soft px-[9px] py-1.5 text-[11px] wrap-anywhere text-accent";
   const textButtonClasses =
@@ -61,8 +61,7 @@ export function DirectoryPage() {
               <label className="sr-only" htmlFor="directory-search">
                 Search by first or last name
               </label>
-              <input
-                className="h-11 w-full min-w-0 border-0 bg-transparent text-xs text-text outline-none placeholder:text-muted"
+              <Input
                 id="directory-search"
                 type="search"
                 placeholder="Search by first or last name…"
@@ -85,8 +84,8 @@ export function DirectoryPage() {
               <label className="whitespace-nowrap" htmlFor="sort-field">
                 Sort by
               </label>
-              <select
-                className={selectClasses}
+              <Select
+                className="flex-1 tablet:max-w-40 tablet:flex-none"
                 id="sort-field"
                 value={state.sortBy}
                 onChange={(event) =>
@@ -97,12 +96,12 @@ export function DirectoryPage() {
                 <option value="last_name">Last name</option>
                 <option value="age">Age</option>
                 <option value="nationality">Nationality</option>
-              </select>
+              </Select>
               <label className="sr-only" htmlFor="sort-order">
                 Sort direction
               </label>
-              <select
-                className={selectClasses}
+              <Select
+                className="flex-1 tablet:max-w-40 tablet:flex-none"
                 id="sort-order"
                 value={state.sortOrder}
                 onChange={(event) =>
@@ -111,7 +110,7 @@ export function DirectoryPage() {
               >
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
-              </select>
+              </Select>
             </div>
           </div>
           {(activeFilters.length > 0 || state.q) && (

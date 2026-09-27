@@ -1,5 +1,6 @@
 import type { FacetValue } from "../../types/directory";
 import { Skeleton } from "../feedback/Skeleton";
+import { Input } from "../ui/Input";
 
 interface Props {
   title: string;
@@ -51,8 +52,7 @@ export function FilterGroup({
               className="flex cursor-pointer items-center gap-[9px] py-[7px] text-xs"
               key={value}
             >
-              <input
-                className="m-0 size-[15px] shrink-0 cursor-pointer accent-accent"
+              <Input
                 type="checkbox"
                 aria-label={`${value}, ${count} matching people`}
                 checked={selected.includes(value)}

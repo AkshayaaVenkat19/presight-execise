@@ -3,6 +3,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../feedback/ToastProvider";
 import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
 
 export function Login() {
   const { user, loading, signIn } = useAuth();
@@ -60,14 +61,13 @@ export function Login() {
           htmlFor="username"
         >
           Username
-          <input
+          <Input
             id="username"
             name="username"
             autoComplete="username"
             maxLength={100}
             required
             disabled={pending}
-            className="rounded-lg border border-border bg-background px-3 py-3"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
@@ -77,7 +77,7 @@ export function Login() {
           htmlFor="password"
         >
           Password
-          <input
+          <Input
             id="password"
             name="password"
             type="password"
@@ -85,7 +85,6 @@ export function Login() {
             maxLength={256}
             required
             disabled={pending}
-            className="rounded-lg border border-border bg-background px-3 py-3"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
