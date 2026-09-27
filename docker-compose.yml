@@ -11,6 +11,7 @@ services:
       CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       DATABASE_PATH: ${DATABASE_PATH:-/app/data/users.db}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       # Persist the SQLite database file between container restarts
       - db-data:/app/data
