@@ -1,0 +1,84 @@
+const { getDbConnection } = require('../connection');
+const { hashPassword } = require('../../utils/password');
+
+/**
+ * Initializes the SQLite database schema with optimal tables, constraints, and indexes.
+ */
+async function runMigrations() {
+  console.log('Running database migrations...');
+  const db = await getDbConnection();
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      expires_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      avatar TEXT NOT NULL,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      age INTEGER NOT NULL CHECK (age >= 0 AND age <= 150),
+      nationality TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS hobbies (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS user_hobbies (
+      user_id INTEGER NOT NULL,
+      hobby_id INTEGER NOT NULL,
+      PRIMARY KEY (user_id, hobby_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (hobby_id) REFERENCES hobbies(id) ON DELETE CASCADE
+    );
+
+    -- Match the list's collation and deterministic ascending tie-breaker.
+    CREATE INDEX IF NOT EXISTS idx_users_first_name_nocase ON users(first_name COLLATE NOCASE, id);
+    CREATE INDEX IF NOT EXISTS idx_users_last_name_nocase ON users(last_name COLLATE NOCASE, id);
+    CREATE INDEX IF NOT EXISTS idx_users_nationality_nocase ON users(nationality COLLATE NOCASE, id);
+    -- Equality filters and nationality grouping use the default collation.
+    CREATE INDEX IF NOT EXISTS idx_users_nationality ON users(nationality);
+    CREATE INDEX IF NOT EXISTS idx_users_age ON users(age);
+    CREATE INDEX IF NOT EXISTS idx_user_hobbies_hobby_user ON user_hobbies(hobby_id, user_id);
+
+    -- Upgrade existing databases too; hobbies.name already has a UNIQUE index.
+    DROP INDEX IF EXISTS idx_users_first_name;
+    DROP INDEX IF EXISTS idx_users_last_name;
+    DROP INDEX IF EXISTS idx_hobbies_name;
+    DROP INDEX IF EXISTS idx_user_hobbies_hobby_id;
+
+    -- Covers the name search: a contains-match cannot seek, but SQLite can scan
+    -- this index instead of the wider users table.
+    CREATE INDEX IF NOT EXISTS idx_users_name_search
+      ON users(first_name COLLATE NOCASE, last_name COLLATE NOCASE, id);
+  `);
+
+  // Idempotent: existing credentials and sessions survive migrations and reseeding.
+  if (!await db.get('SELECT id FROM accounts WHERE username = ?', 'admin')) {
+    await db.run('INSERT OR IGNORE INTO accounts (username, password_hash) VALUES (?, ?)',
+      'admin', await hashPassword('admin'));
+  }
+  console.log('Database migrations completed successfully.');
+}
+
+module.exports = { runMigrations };
+
+if (require.main === module) {
+  runMigrations().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

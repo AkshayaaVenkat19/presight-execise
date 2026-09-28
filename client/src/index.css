@@ -1,0 +1,2 @@
+/* Compatibility entry point; shared styling lives in styles/global.css. */
+@import "./styles/global.css";
