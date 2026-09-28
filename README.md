@@ -45,6 +45,7 @@ cp server/.env.example server/.env
 cp client/.env.example client/.env
 npm ci
 npm run dev
+credential : username - admin, password - admin
 ```
 
 - Client: http://localhost:5173 · Server: http://localhost:3001 · Login: `admin` / `admin`
