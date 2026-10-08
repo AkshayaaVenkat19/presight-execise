@@ -104,7 +104,7 @@ Additional parameters for `/api/users`:
 
 | Param | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `sortBy` | enum | `first_name` | `first_name`, `last_name`, `age`, `nationality` |
+| `sortBy` | enum | `first_name` | `first_name`, `last_name`, `birth_date`, `nationality` |
 | `sortOrder` | enum | `asc` | `asc`, `desc` |
 | `page` | integer | `1` | 1-based |
 | `limit` | integer | `20` | Max `100` |
@@ -115,13 +115,13 @@ Unknown or out-of-range values return HTTP 400.
 
 | Table | Columns |
 | --- | --- |
-| `users` | `id`, `avatar`, `first_name`, `last_name`, `age` (0–150), `nationality`, `created_at`, `updated_at` |
+| `users` | `id`, `avatar`, `first_name`, `last_name`, `birth_date` (ISO `YYYY-MM-DD`), `nationality`, `created_at`, `updated_at` |
 | `hobbies` | `id`, `name` (unique) |
 | `user_hobbies` | `user_id`, `hobby_id` (composite PK, cascading FKs) |
 | `accounts` | `id`, `username` (unique), `password_hash` |
 | `sessions` | `token_hash` (PK), `account_id`, `expires_at` |
 
-Indexes cover name search (`NOCASE` collations with an `id` tie-breaker), `nationality`, `age`, the `hobby_id, user_id` join path, and session expiry. WAL mode and `PRAGMA foreign_keys = ON` are enabled on connect.
+Indexes cover name search (`NOCASE` collations with an `id` tie-breaker), `nationality`, `birth_date`, the `hobby_id, user_id` join path, and session expiry. WAL mode and `PRAGMA foreign_keys = ON` are enabled on connect.
 
 ## Testing instructions
 
@@ -155,7 +155,7 @@ Server tests cover query validation, filter semantics, pagination metadata, auth
 → Keeps the database implementation independent from the React client and testable in isolation.
 
 **Why indexes?**
-→ Improve the frequently used name-search, nationality/age sort and hobby-join queries.
+→ Improve the frequently used name-search, nationality/birth-date sort and hobby-join queries.
 
 **Why parameterized queries and an allowlist for sort fields?**
 → Prevents SQL injection and lets SQLite reuse query plans.
