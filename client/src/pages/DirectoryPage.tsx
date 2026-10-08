@@ -127,7 +127,7 @@ export function DirectoryPage() {
                   options={[
                     { value: "first_name", label: "First name" },
                     { value: "last_name", label: "Last name" },
-                    { value: "age", label: "Age" },
+                    { value: "birth_date", label: "Birth date" },
                     { value: "nationality", label: "Nationality" },
                   ]}
                 />

@@ -2,11 +2,54 @@ const { getDbConnection } = require('../connection');
 const { hashPassword } = require('../../utils/password');
 
 /**
+ * Upgrades databases created before `users.age` was replaced by `users.birth_date`.
+ * SQLite cannot add a NOT NULL CHECK column in place, so the table is rebuilt and
+ * each stored age is backfilled as a birth date that many years before today.
+ */
+async function replaceAgeWithBirthDate(db) {
+  const columns = await db.all('PRAGMA table_info(users)');
+  if (!columns.some((column) => column.name === 'age')) return;
+
+  console.log('Migrating users.age to users.birth_date...');
+  // DROP TABLE would cascade into user_hobbies while foreign keys are enforced.
+  await db.exec('PRAGMA foreign_keys = OFF;');
+  try {
+    await db.exec(`
+      BEGIN IMMEDIATE;
+      CREATE TABLE users_migrated (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        avatar TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        birth_date TEXT NOT NULL CHECK (birth_date = date(birth_date)),
+        nationality TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO users_migrated (id, avatar, first_name, last_name, birth_date, nationality, created_at, updated_at)
+        SELECT id, avatar, first_name, last_name, date('now', '-' || age || ' years'), nationality, created_at, updated_at
+        FROM users;
+      DROP TABLE users;
+      ALTER TABLE users_migrated RENAME TO users;
+      COMMIT;
+    `);
+  } catch (error) {
+    await db.exec('ROLLBACK;');
+    throw error;
+  } finally {
+    await db.exec('PRAGMA foreign_keys = ON;');
+  }
+}
+
+/**
  * Initializes the SQLite database schema with optimal tables, constraints, and indexes.
  */
 async function runMigrations() {
   console.log('Running database migrations...');
   const db = await getDbConnection();
+
+  // Rebuilds legacy tables first; the index statements below restore what it drops.
+  await replaceAgeWithBirthDate(db);
 
   await db.exec(`
     CREATE TABLE IF NOT EXISTS accounts (
@@ -26,7 +69,7 @@ async function runMigrations() {
       avatar TEXT NOT NULL,
       first_name TEXT NOT NULL,
       last_name TEXT NOT NULL,
-      age INTEGER NOT NULL CHECK (age >= 0 AND age <= 150),
+      birth_date TEXT NOT NULL CHECK (birth_date = date(birth_date)),
       nationality TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -51,7 +94,7 @@ async function runMigrations() {
     CREATE INDEX IF NOT EXISTS idx_users_nationality_nocase ON users(nationality COLLATE NOCASE, id);
     -- Equality filters and nationality grouping use the default collation.
     CREATE INDEX IF NOT EXISTS idx_users_nationality ON users(nationality);
-    CREATE INDEX IF NOT EXISTS idx_users_age ON users(age);
+    CREATE INDEX IF NOT EXISTS idx_users_birth_date ON users(birth_date);
     CREATE INDEX IF NOT EXISTS idx_user_hobbies_hobby_user ON user_hobbies(hobby_id, user_id);
 
     -- Upgrade existing databases too; hobbies.name already has a UNIQUE index.
@@ -59,6 +102,7 @@ async function runMigrations() {
     DROP INDEX IF EXISTS idx_users_last_name;
     DROP INDEX IF EXISTS idx_hobbies_name;
     DROP INDEX IF EXISTS idx_user_hobbies_hobby_id;
+    DROP INDEX IF EXISTS idx_users_age;
 
     -- Covers the name search: a contains-match cannot seek, but SQLite can scan
     -- this index instead of the wider users table.

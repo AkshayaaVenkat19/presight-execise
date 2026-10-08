@@ -7,6 +7,7 @@ import {
   TABLE_ROW_HEIGHT_PX,
 } from "../../constants/ui";
 import { useVirtualWindow } from "../../hooks/useVirtualWindow";
+import { formatBirthDate } from "../../utils/date";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { Skeleton } from "../feedback/Skeleton";
@@ -86,13 +87,13 @@ export const VirtualUserList = memo(function VirtualUserList({
               <th className={`${headerClasses} w-[32%]`} scope="col">
                 Name
               </th>
-              <th className={`${headerClasses} w-[23%]`} scope="col">
+              <th className={`${headerClasses} w-[21%]`} scope="col">
                 Nationality
               </th>
-              <th className={`${headerClasses} w-[9%]`} scope="col">
-                Age
+              <th className={`${headerClasses} w-[14%]`} scope="col">
+                Birth date
               </th>
-              <th className={`${headerClasses} w-[36%]`} scope="col">
+              <th className={`${headerClasses} w-[33%]`} scope="col">
                 Hobbies
               </th>
             </tr>
@@ -129,7 +130,9 @@ export const VirtualUserList = memo(function VirtualUserList({
                   <td className={cellClasses} title={user.nationality}>
                     {user.nationality}
                   </td>
-                  <td className={cellClasses}>{user.age}</td>
+                  <td className={cellClasses}>
+                    {formatBirthDate(user.birth_date)}
+                  </td>
                   <td className={cellClasses}>
                     <HobbyTags hobbies={user.hobbies} compact />
                   </td>

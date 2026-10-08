@@ -53,7 +53,7 @@ it("protects the directory, signs in, preserves filters, and shows a success toa
       });
     }),
   );
-  renderLogin("/directory?q=Alex&sortBy=age");
+  renderLogin("/directory?q=Alex&sortBy=birth_date");
   await screen.findByRole("heading", { name: "Sign in" });
   expect(
     vi
@@ -63,7 +63,7 @@ it("protects the directory, signs in, preserves filters, and shows a success toa
   fillCredentials();
   expect(await screen.findByText("Signed in successfully")).toBeInTheDocument();
   expect(await screen.findByRole("searchbox")).toHaveValue("Alex");
-  expect(screen.getByLabelText("Sort by")).toHaveValue("age");
+  expect(screen.getByLabelText("Sort by")).toHaveValue("birth_date");
   expect(fetch).toHaveBeenCalledWith(
     "/api/auth/login",
     expect.objectContaining({

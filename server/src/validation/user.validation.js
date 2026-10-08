@@ -1,7 +1,7 @@
 const { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } = require('../utils/pagination');
 const { getVocabulary } = require('./vocabulary');
 
-const SORT_FIELDS = ['first_name', 'last_name', 'age', 'nationality'];
+const SORT_FIELDS = ['first_name', 'last_name', 'birth_date', 'nationality'];
 const SORT_ORDERS = ['asc', 'desc'];
 
 const MAX_TEXT_LENGTH = 100;

@@ -18,10 +18,10 @@ before(async () => {
   await runMigrations();
   db = await getDbConnection();
   await db.exec(`
-    INSERT INTO users (id, avatar, first_name, last_name, age, nationality) VALUES
-      (1, 'avatar', 'Alex', 'Smith', 30, 'Canada'),
-      (2, 'avatar', 'Alex', 'Smith', 30, 'Japan'),
-      (3, 'avatar', 'Beth', 'Jones', 25, 'Canada');
+    INSERT INTO users (id, avatar, first_name, last_name, birth_date, nationality) VALUES
+      (1, 'avatar', 'Alex', 'Smith', '1994-05-10', 'Canada'),
+      (2, 'avatar', 'Alex', 'Smith', '1994-05-10', 'Japan'),
+      (3, 'avatar', 'Beth', 'Jones', '1999-01-20', 'Canada');
     INSERT INTO hobbies (id, name) VALUES (1, 'Reading'), (2, 'Hiking');
     INSERT INTO user_hobbies (user_id, hobby_id) VALUES (1, 1), (1, 2), (2, 1);
   `);
@@ -51,8 +51,8 @@ async function request(path, options) {
 }
 
 test('user pages preserve deterministic sort and pagination metadata', async () => {
-  const first = await request('/api/users?sortBy=age&sortOrder=desc&limit=1');
-  const second = await request('/api/users?sortBy=age&sortOrder=desc&limit=1&page=2');
+  const first = await request('/api/users?sortBy=birth_date&sortOrder=asc&limit=1');
+  const second = await request('/api/users?sortBy=birth_date&sortOrder=asc&limit=1&page=2');
   assert.equal(first.status, 200);
   assert.deepEqual(first.body.data.map((user) => user.id), [1]);
   assert.deepEqual(second.body.data.map((user) => user.id), [2]);
@@ -78,7 +78,7 @@ test('page limits are enforced and responses contain only directory fields', asy
   assert.equal(result.status, 200);
   assert.equal(result.body.pagination.limit, 100);
   assert.deepEqual(Object.keys(result.body.data[0]).sort(),
-    ['age', 'avatar', 'first_name', 'hobbies', 'id', 'last_name', 'nationality']);
+    ['avatar', 'birth_date', 'first_name', 'hobbies', 'id', 'last_name', 'nationality']);
   assert.deepEqual(result.body.data[0].hobbies, ['Hiking', 'Reading']);
   assert.deepEqual(result.body.data[2].hobbies, []);
   assert.equal((await request('/api/users')).body.pagination.limit, 20);
@@ -116,7 +116,7 @@ test('directory query count stays constant as the requested page grows', async (
 test('ascending text sorts and hobby lookups use matching indexes', async () => {
   for (const field of ['first_name', 'last_name', 'nationality']) {
     const plan = await db.all(`EXPLAIN QUERY PLAN
-      SELECT id, avatar, first_name, last_name, age, nationality FROM users
+      SELECT id, avatar, first_name, last_name, birth_date, nationality FROM users
       ORDER BY ${field} COLLATE NOCASE ASC, id ASC LIMIT 20`);
     const details = plan.map((row) => row.detail).join('\n');
     assert.match(details, new RegExp(`USING INDEX idx_users_${field}_nocase`));

@@ -18,7 +18,7 @@ const users: User[] = Array.from({ length: 90 }, (_, index) => ({
   avatar: "",
   first_name: index % 2 === 0 ? "Alex" : "Beth",
   last_name: `Person ${String(index + 1).padStart(3, "0")}`,
-  age: 20 + index,
+  birth_date: `19${String(50 + index).slice(-2)}-03-14`,
   nationality: index % 2 === 0 ? "Canada" : "Japan",
   hobbies: ["Reading", "Hiking", "Music"],
 }));
@@ -304,13 +304,13 @@ describe("directory interactions", () => {
 
   it("restores shared URL state and shows two hobbies plus the remaining count", async () => {
     renderApp(
-      "/?q=Alex&nationality=Canada&hobby=Reading&sortBy=age&sortOrder=desc",
+      "/?q=Alex&nationality=Canada&hobby=Reading&sortBy=birth_date&sortOrder=desc",
     );
     expect(
       await screen.findByRole("region", { name: "User directory, cards view" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("searchbox")).toHaveValue("Alex");
-    expect(screen.getByLabelText("Sort by")).toHaveValue("age");
+    expect(screen.getByLabelText("Sort by")).toHaveValue("birth_date");
     expect(
       screen.getByRole("button", { name: "Sort descending" }),
     ).toHaveAttribute("aria-pressed", "true");
@@ -571,7 +571,7 @@ describe("directory interactions", () => {
         String(input).startsWith("/api/filters"),
       ).length;
     fireEvent.click(screen.getByLabelText("Sort by"));
-    fireEvent.click(screen.getByRole("option", { name: "Age" }));
+    fireEvent.click(screen.getByRole("option", { name: "Birth date" }));
     await waitFor(() => {
       const requests = vi
         .mocked(fetch)
@@ -582,7 +582,7 @@ describe("directory interactions", () => {
         requests.some(
           (url) =>
             url.pathname === "/api/users" &&
-            url.searchParams.get("sortBy") === "age" &&
+            url.searchParams.get("sortBy") === "birth_date" &&
             url.searchParams.get("page") === "1",
         ),
       ).toBe(true);

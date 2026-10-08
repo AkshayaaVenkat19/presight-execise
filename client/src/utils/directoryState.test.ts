@@ -10,14 +10,14 @@ describe("shareable directory state", () => {
   it("restores repeated and comma-separated filters and validates sort values", () => {
     const state = readDirectoryState(
       new URLSearchParams(
-        "q=Alex&hobby=Reading,Hiking&hobby=Reading&nationality=Canada&sortBy=age&sortOrder=DESC&view=table",
+        "q=Alex&hobby=Reading,Hiking&hobby=Reading&nationality=Canada&sortBy=birth_date&sortOrder=DESC&view=table",
       ),
     );
     expect(state).toEqual({
       q: "Alex",
       hobbies: ["Hiking", "Reading"],
       nationalities: ["Canada"],
-      sortBy: "age",
+      sortBy: "birth_date",
       sortOrder: "desc",
       view: "table",
     });
@@ -29,7 +29,7 @@ describe("shareable directory state", () => {
 
   it("updates only requested URL fields and removes cleared filters", () => {
     const params = writeDirectoryState(
-      new URLSearchParams("q=Alex&hobby=Reading&sortBy=age&extra=keep"),
+      new URLSearchParams("q=Alex&hobby=Reading&sortBy=birth_date&extra=keep"),
       { hobbies: [], nationalities: ["Japan", "Canada", "Japan"] },
     );
     expect(params.get("q")).toBe("Alex");

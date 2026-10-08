@@ -1,5 +1,6 @@
 import { memo } from "react";
 import type { User } from "../../types/directory";
+import { formatBirthDate } from "../../utils/date";
 import { Avatar } from "../ui/Avatar";
 import { HobbyTags } from "./HobbyTags";
 
@@ -20,7 +21,7 @@ export const UserCard = memo(function UserCard({ user }: { user: User }) {
               {user.nationality}
             </span>
             <span className="whitespace-nowrap text-[10px]">
-              {user.age} yrs
+              {formatBirthDate(user.birth_date)}
             </span>
           </p>
         </div>

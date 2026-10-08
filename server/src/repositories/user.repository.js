@@ -92,11 +92,11 @@ class UserRepository {
          u.avatar,
          u.first_name,
          u.last_name,
-         u.age,
+         u.birth_date,
          u.nationality,
          GROUP_CONCAT(h.name, '||') AS hobbies
        FROM (
-         SELECT u.id, u.avatar, u.first_name, u.last_name, u.age, u.nationality
+         SELECT u.id, u.avatar, u.first_name, u.last_name, u.birth_date, u.nationality
          FROM users u
          ${where}
          ${orderBy}
@@ -114,7 +114,7 @@ class UserRepository {
       avatar: row.avatar,
       first_name: row.first_name,
       last_name: row.last_name,
-      age: row.age,
+      birth_date: row.birth_date,
       nationality: row.nationality,
       hobbies: row.hobbies ? row.hobbies.split('||').sort() : [],
     }));

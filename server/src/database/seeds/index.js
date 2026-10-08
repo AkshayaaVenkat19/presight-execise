@@ -42,6 +42,13 @@ function getRandomElements(array, count) {
   const shuffled = [...array].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
+/** A uniformly random ISO date for someone currently between MIN_AGE and MAX_AGE. */
+function getRandomBirthDate() {
+  const today = new Date();
+  const youngest = Date.UTC(today.getUTCFullYear() - MIN_AGE, today.getUTCMonth(), today.getUTCDate());
+  const oldest = Date.UTC(today.getUTCFullYear() - MAX_AGE - 1, today.getUTCMonth(), today.getUTCDate() + 1);
+  return new Date(getRandomInt(oldest, youngest)).toISOString().slice(0, 10);
+}
 
 async function seedDatabase(numUsers = DEFAULT_USER_COUNT, { onlyIfEmpty = false } = {}) {
   if (!Number.isSafeInteger(numUsers) || numUsers < 1) {
@@ -73,13 +80,13 @@ async function seedDatabase(numUsers = DEFAULT_USER_COUNT, { onlyIfEmpty = false
     for (let i = 1; i <= numUsers; i++) {
       const firstName = SAMPLE_FIRST_NAMES[Math.floor(Math.random() * SAMPLE_FIRST_NAMES.length)];
       const lastName = SAMPLE_LAST_NAMES[Math.floor(Math.random() * SAMPLE_LAST_NAMES.length)];
-      const age = getRandomInt(MIN_AGE, MAX_AGE);
+      const birthDate = getRandomBirthDate();
       const nationality = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
       const avatar = `https://i.pravatar.cc/${AVATAR_SIZE}?u=${i}`;
 
       const res = await db.run(
-        'INSERT INTO users (avatar, first_name, last_name, age, nationality) VALUES (?, ?, ?, ?, ?)',
-        [avatar, firstName, lastName, age, nationality]
+        'INSERT INTO users (avatar, first_name, last_name, birth_date, nationality) VALUES (?, ?, ?, ?, ?)',
+        [avatar, firstName, lastName, birthDate, nationality]
       );
       const userId = res.lastID;
 

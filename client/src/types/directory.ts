@@ -1,7 +1,7 @@
 export const SORT_FIELDS = [
   "first_name",
   "last_name",
-  "age",
+  "birth_date",
   "nationality",
 ] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
@@ -13,7 +13,7 @@ export interface User {
   avatar: string;
   first_name: string;
   last_name: string;
-  age: number;
+  birth_date: string;
   nationality: string;
   hobbies: string[];
 }
