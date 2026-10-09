@@ -23,8 +23,12 @@ class AuthService {
     return { token, user: { id: account.id, username: account.username } };
   }
 
+  static async findUser(token) {
+    return (token && await AuthRepository.findSession(tokenHash(token))) || null;
+  }
+
   static async getUser(token) {
-    const user = token && await AuthRepository.findSession(tokenHash(token));
+    const user = await AuthService.findUser(token);
     if (!user) throw new AppError('Please sign in to continue', 401, 'UNAUTHENTICATED');
     return user;
   }

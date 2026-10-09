@@ -122,10 +122,13 @@ class UserRepository {
     return { users, total };
   }
 
-  /** Top 20 nationalities with user counts for the active filter state. */
+  /**
+   * Top 20 nationalities with user counts for the active filter state.
+   * The nationality filter is ignored here so other options stay selectable (OR).
+   */
   static async findTopNationalities(filters) {
     const db = await getDbConnection();
-    const { where, params } = buildFilterClause(filters);
+    const { where, params } = buildFilterClause({ ...filters, nationalities: [] });
 
     return db.all(
       `SELECT u.nationality AS value, COUNT(u.id) AS count

@@ -20,7 +20,7 @@ class AuthController {
 
   static async me(req, res) {
     res.set('Cache-Control', 'no-store');
-    return sendSuccess(res, req.user);
+    return sendSuccess(res, await AuthService.findUser(getSessionToken(req)));
   }
 
   static async logout(req, res) {

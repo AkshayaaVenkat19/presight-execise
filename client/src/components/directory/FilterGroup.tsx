@@ -7,6 +7,7 @@ interface Props {
   values: FacetValue[];
   selected: string[];
   onToggle: (value: string) => void;
+  onSetAll: (values: string[]) => void;
   loading: boolean;
   maxSelected: number;
 }
@@ -16,6 +17,7 @@ export function FilterGroup({
   values,
   selected,
   onToggle,
+  onSetAll,
   loading,
   maxSelected,
 }: Props) {
@@ -25,6 +27,9 @@ export function FilterGroup({
       .filter((value) => !values.some((option) => option.value === value))
       .map((value) => ({ value, count: 0 })),
   ];
+  const selectable = options.slice(0, maxSelected).map(({ value }) => value);
+  const allSelected =
+    selectable.length > 0 && selectable.every((value) => selected.includes(value));
   return (
     <fieldset className="m-0 flex min-h-0 min-w-0 flex-col border-0 p-0">
       <legend className="mb-1 flex w-full shrink-0 items-center tablet:mb-3.5 justify-between p-0 text-xs font-semibold">
@@ -47,6 +52,18 @@ export function FilterGroup({
         </p>
       ) : (
         <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-contain p-[3px]">
+          <label className="flex cursor-pointer items-center gap-[9px] py-[7px] text-xs underline italic">
+            <Input
+              type="checkbox"
+              aria-label={`Select all ${title.toLowerCase()}`}
+              checked={allSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = !allSelected && selected.length > 0;
+              }}
+              onChange={() => onSetAll(allSelected ? [] : selectable)}
+            />
+            <span className="min-w-0 flex-1 truncate">Select all</span>
+          </label>
           {options.map(({ value, count }) => (
             <label
               className="flex cursor-pointer items-center gap-[9px] py-[7px] text-xs"

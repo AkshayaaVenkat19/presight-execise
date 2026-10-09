@@ -22,9 +22,13 @@ export function useDirectoryState() {
     });
   }
 
+  function setAll(kind: "nationalities" | "hobbies", values: string[]) {
+    update({ [kind]: values });
+  }
+
   function clearFilters() {
     update({ q: "", nationalities: [], hobbies: [] });
   }
 
-  return { state, update, toggle, clearFilters };
+  return { state, update, toggle, setAll, clearFilters };
 }

@@ -81,7 +81,7 @@ Container logs are single-line JSON, so `docker compose logs server` can be pipe
 | --- | --- | --- | --- |
 | `GET` | `/api/health` | no | Liveness and database readiness |
 | `POST` | `/api/auth/login` | no | Sign in, sets an HTTP-only session cookie |
-| `GET` | `/api/auth/me` | yes | Current account, or 401 |
+| `GET` | `/api/auth/me` | no | Current account, or `null` when signed out |
 | `POST` | `/api/auth/logout` | yes | Revoke session and clear cookie |
 | `GET` | `/api/users` | yes | Paginated, filtered, sorted users |
 | `GET` | `/api/filters` | yes | Top 20 hobbies and nationalities in one request |

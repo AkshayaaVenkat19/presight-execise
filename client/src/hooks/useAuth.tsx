@@ -24,9 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const notify = useToast();
   const session = useQuery({
     queryKey: ["session"],
-    queryFn: async ({ signal }) => {
+    // No abort signal: React Query would cancel and refetch on StrictMode remount.
+    queryFn: async () => {
       try {
-        return await auth.getSession(signal);
+        return await auth.getSession();
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) return null;
         throw error;

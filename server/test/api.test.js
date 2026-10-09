@@ -289,7 +289,7 @@ test('directory endpoints require a valid session, while health stays public', a
     assert.equal((await request(`/api${path}`, { headers: { Cookie: '' } })).status, 401);
   }
   assert.equal((await request('/api/health', { headers: { Cookie: '' } })).status, 200);
-  assert.equal((await request('/api/auth/me', { headers: { Cookie: 'presight_session=bad' } })).status, 401);
+  assert.deepEqual((await request('/api/auth/me', { headers: { Cookie: 'presight_session=bad' } })).body.data, null);
 });
 
 test('login issues an HTTP-only session, me restores it, and logout revokes it', async () => {
@@ -302,7 +302,7 @@ test('login issues an HTTP-only session, me restores it, and logout revokes it',
   const headers = { Cookie: cookie.split(';')[0], 'Content-Type': 'application/json' };
   assert.equal((await request('/api/auth/me', { headers })).body.data.username, 'admin');
   assert.equal((await request('/api/auth/logout', { method: 'POST', headers, body: '{}' })).status, 200);
-  assert.equal((await request('/api/auth/me', { headers })).status, 401);
+  assert.equal((await request('/api/auth/me', { headers })).body.data, null);
 });
 
 test('expired sessions are rejected and auth writes require JSON', async () => {
@@ -311,6 +311,6 @@ test('expired sessions are rejected and auth writes require JSON', async () => {
   const { createHash } = require('node:crypto');
   const hash = createHash('sha256').update(cookie.split('=')[1]).digest('hex');
   await db.run('UPDATE sessions SET expires_at = 0 WHERE token_hash = ?', hash);
-  assert.equal((await request('/api/auth/me', { headers: { Cookie: cookie } })).status, 401);
+  assert.equal((await request('/api/auth/me', { headers: { Cookie: cookie } })).body.data, null);
   assert.equal((await request('/api/auth/logout', { method: 'POST' })).status, 415);
 });

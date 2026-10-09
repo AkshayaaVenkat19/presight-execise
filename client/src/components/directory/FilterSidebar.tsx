@@ -12,6 +12,7 @@ interface Props {
   error: Error | null;
   retry: () => void;
   toggle: (kind: "nationalities" | "hobbies", value: string) => void;
+  setAll: (kind: "nationalities" | "hobbies", values: string[]) => void;
   clear: () => void;
 }
 
@@ -22,6 +23,7 @@ export function FilterSidebar({
   error,
   retry,
   toggle,
+  setAll,
   clear,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -90,6 +92,7 @@ export function FilterSidebar({
               values={facets?.nationalities ?? []}
               selected={state.nationalities}
               onToggle={(value) => toggle("nationalities", value)}
+              onSetAll={(values) => setAll("nationalities", values)}
               loading={loading}
               maxSelected={MAX_SELECTED_FILTERS}
             />
@@ -98,6 +101,7 @@ export function FilterSidebar({
               values={facets?.hobbies ?? []}
               selected={state.hobbies}
               onToggle={(value) => toggle("hobbies", value)}
+              onSetAll={(values) => setAll("hobbies", values)}
               loading={loading}
               maxSelected={10}
             />

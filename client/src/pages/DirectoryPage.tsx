@@ -15,7 +15,7 @@ import { DirectorySkeleton, Skeleton } from "../components/feedback/Skeleton";
 import { StatusPanel } from "../components/feedback/StatusPanel";
 
 export function DirectoryPage() {
-  const { state, update, toggle, clearFilters } = useDirectoryState();
+  const { state, update, toggle, setAll, clearFilters } = useDirectoryState();
   const { users, facets, waitingForSearch, userKey } =
     useDirectoryQueries(state);
   const people = useMemo(
@@ -80,6 +80,7 @@ export function DirectoryPage() {
             void facets.refetch();
           }}
           toggle={toggle}
+          setAll={setAll}
           clear={clearFilters}
         />
         <section
